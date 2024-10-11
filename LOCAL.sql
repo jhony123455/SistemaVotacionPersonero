@@ -74,16 +74,17 @@ CREATE TABLE Resultados (
 
 
 INSERT INTO Grado (NombreGrado) VALUES ('1º'), ('2º'), ('3º'), ('4º'), ('5º'), ('6º'), ('7º'), ('8º'), ('9º'), ("10º"), ("11º");
-INSERT INTO rol (Nombre_rol) values ("Administrador"), ("Usuario");
-insert into usuario (Nombre_Usuario, Contrasena, Id_Rol) values ("Jhony", "JhonatanP", 1);
+INSERT INTO Rol (Nombre_rol) values ("Administrador"), ("Usuario");
+insert into Usuario (Nombre_Usuario, Contrasena, Id_Rol) values ("Jhony", "JhonatanP", 1) , ("Valentina", "gatopizza29", 1);
+
 
 select NombreGrado from Grado;
 select* from Estudiante;
 select*from Candidato;
 select*from Voto;
 select*from Eleccion;
-select*from rol;
-select *from usuario;
+select*from Rol;
+select *from Usuario;
 
 ALTER TABLE Eleccion
 MODIFY COLUMN Fecha_Inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -126,7 +127,7 @@ ADD COLUMN Estado VARCHAR(20) DEFAULT 'Activa';//
 
 
 CREATE EVENT update_election_status
-ON SCHEDULE EVERY 30 second
+ON SCHEDULE EVERY 1 minute
 DO
 BEGIN
     UPDATE Eleccion

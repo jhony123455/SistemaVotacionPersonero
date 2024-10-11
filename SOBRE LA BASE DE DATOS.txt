@@ -21,8 +21,8 @@ LA OTRA OPCION ES USAR LA LOCAL, LO UNICO QUE HAY QUE HACER ES COLOCAR LOS CAMPO
 
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String URL = "jdbc:mysql://localhost:3306/eleccionpersonero";
-    private static final String USER = ""; 
-    private static final String PASSWORD = ""; 
+    private static final String USER = "root"; 
+    private static final String PASSWORD = "cbn2016"; 
 
 
 
