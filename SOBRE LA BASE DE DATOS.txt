@@ -1,22 +1,4 @@
-NUESTRO PROGRAMA TIENE DOS CONEXIONES A BASE DE DATOS, UNA PROPORCIONADA EN LA NUBE POR EL SERVICIO DE CLEVER-CLOUD ESTA TIENE LA DESVENTAJA DE QUE TIENE QUE CONECTARSE 
-A INTERNET, POR ENDE EL PROGRAMA SE VUELVE MUCHO MAS LENTO USANDO ESTA FORMA, PERO AUN ASI DEJO LAS DOS FORMAS DE CONECTARSE 
 
-
-host para la base de datos en la nube: bcap7i33wbcrx2ercjxm-mysql.services.clever-cloud.com
-
-
-CREDENDCIALES DE BASE DE DATOS EN LA NUBE 
-
-*REMPLAZAR EN LA CLASE CONEXION*
-
-    private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
-    private static final String URL = "jdbc:mysql://uwbdbqqorzhzql0l:wi458qYyoYSBEYCzQGDa@bcap7i33wbcrx2ercjxm-mysql.services.clever-cloud.com:3306/bcap7i33wbcrx2ercjxm";
-    private static final String USER = "uwbdbqqorzhzql0l";
-    private static final String PASSWORD = "wi458qYyoYSBEYCzQGDa";
-
-
-
-LA OTRA OPCION ES USAR LA LOCAL, LO UNICO QUE HAY QUE HACER ES COLOCAR LOS CAMPOS REQUERIDOS 
 
 
     private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
@@ -27,4 +9,3 @@ LA OTRA OPCION ES USAR LA LOCAL, LO UNICO QUE HAY QUE HACER ES COLOCAR LOS CAMPO
 
 
 
-LOS SQL DE AMBOS SON IDENTICOS, LO DIFERENCIAN LOS NOMBRES NUBE (PARA LA BASE DE DATOS EN LA NUBE) LOCAL (PARA LA BASE DE DATOS LOCAL)
