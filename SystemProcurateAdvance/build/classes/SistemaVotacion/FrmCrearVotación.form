@@ -56,12 +56,17 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="FormatDay" min="-2" pref="225" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
                                   <Component id="jLabel2" min="-2" pref="153" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="FormatHour" min="-2" pref="225" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="FormatHourFin" min="-2" pref="226" max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="Bt12" max="32767" attributes="0"/>
+                                      <Component id="Bt24" pref="131" max="32767" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                       </Group>
@@ -70,7 +75,7 @@
                           <Component id="BtnVotacion" min="-2" pref="225" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="254" max="32767" attributes="0"/>
+                  <EmptySpace pref="105" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -82,13 +87,16 @@
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="FormatDay" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="172" max="32767" attributes="0"/>
+                  <EmptySpace pref="184" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="FormatHour" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="FormatHourFin" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="Bt24" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="80" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="Bt12" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
                   <Component id="BtnVotacion" min="-2" pref="62" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
               </Group>
@@ -119,6 +127,22 @@
         <Component class="javax.swing.JFormattedTextField" name="FormatHour">
         </Component>
         <Component class="javax.swing.JFormattedTextField" name="FormatHourFin">
+        </Component>
+        <Component class="javax.swing.JButton" name="Bt24">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Vista 24h"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bt24ActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="Bt12">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Vista12h"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="Bt12ActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

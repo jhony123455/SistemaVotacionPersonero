@@ -90,13 +90,13 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
             boolean guardadoEnBD = estudiantesDAO.saveStudent(estudiante);
 
             if (!guardadoEnBD) {
-                mostrarMensaje("Error al guardar el estudiante en la base de datos.", JOptionPane.ERROR_MESSAGE);
+                mostrarMensaje("Error al guardar el estudiante.", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             if (gradoSeleccionado.equals("11º")) {
                 Candidatos.listaCandidatos.add(new Candidatos(1, estudiante, ""));
-                System.out.println("hola fui añadido a 11");
+                
                
             }
             
@@ -105,6 +105,7 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
 
             JOptionPane.showMessageDialog(rootPane, "Estudiante guardado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             formularioPrincipal.actualizarEstado();
+            Borrar();
             System.out.println(estudiante.datoContacto());
 
         } catch (Validaciones.ValidacionException e) {
@@ -135,6 +136,13 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(rootPane, mensaje, "Información", tipo);
         mensajeMostrado = true;
     }
+    }
+    
+    public void Borrar(){
+        TxtNombre.setText("");
+        TxtApellido.setText("");
+        TxtDocumento.setText("");
+        ComboGrado.setSelectedItem(ComboGrado.getItemAt(0));
     }
 
   
@@ -286,7 +294,7 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
 
     private void TxtApellidoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TxtApellidoKeyTyped
         // TODO add your handling code here:
-        if(TxtDocumento.getText().length() >= 25)
+        if(TxtApellido.getText().length() >= 25)
     {
         evt.consume();
        

@@ -87,7 +87,10 @@ VALUES
 ('Gabriela', 'Mejia', '1234567896', 7),
 ('Hector', 'Castillo', '1234567897', 8),
 ('Camilo', 'Rodriguez', '1234567898', 9),
-('Cristina', 'Mancilla', '1234567899', 10);
+('Cristina', 'Mancilla', '1234567899', 10),
+('Carlos', 'Pérez', '123456789', 11),
+    ('Ana', 'Gómez', '987654321', 11),
+    ('Luis', 'Martínez', '456789123', 11);
 
 
 
@@ -345,4 +348,4 @@ BEGIN
     WHERE Fecha_Fin < NOW() AND Estado = 'Activa';
 END//
 
-call ObtenerResultadosPorCandidato(1);
+

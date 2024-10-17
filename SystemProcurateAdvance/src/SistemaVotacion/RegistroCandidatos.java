@@ -13,6 +13,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -27,6 +28,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
     private CandidatosDAO candidatosdao;
     private EstudiantesDAO estudiantesdao;
     private FrmPrincipal formularioPrincipal;
+    int count = 0;
     
     public RegistroCandidatos() {
         initComponents();
@@ -38,6 +40,8 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         TxtCandidato2.setText("");
         TxtCandidato3.setText("");
         llenarEstudiante();
+        BtEliminarCandidatos.setVisible(false);
+                
    
         
     }
@@ -71,6 +75,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         
         List<Candidatos> candidatosRegistrados = candidatosdao.obtenerTodosLosCandidatos();
         if (candidatosRegistrados.size() >= 3) {
+            BtEliminarCandidatos.setVisible(true);
             JOptionPane.showMessageDialog(this, "Ya se han registrado 3 candidatos. No se pueden agregar más.");
             return false;
         }
@@ -103,7 +108,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
 
         if (registroExitoso) {
             actualizarInterfazCandidato(estudianteSeleccionado);
-            JOptionPane.showMessageDialog(this, "Candidato registrado con éxito en la base de datos.");
+           
             return true;
         } else {
             JOptionPane.showMessageDialog(this, "Error al registrar el candidato en la base de datos.");
@@ -145,6 +150,11 @@ public class RegistroCandidatos extends javax.swing.JFrame {
             }
         }
     }
+    
+    
+    
+    
+    
 
 
     /**
@@ -167,6 +177,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         TxtCandidato1 = new javax.swing.JTextField();
         BtCarga = new javax.swing.JButton();
+        BtEliminarCandidatos = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -203,6 +214,13 @@ public class RegistroCandidatos extends javax.swing.JFrame {
             }
         });
 
+        BtEliminarCandidatos.setText("Eliminar Candidatos");
+        BtEliminarCandidatos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtEliminarCandidatosActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PanelCandidatosLayout = new javax.swing.GroupLayout(PanelCandidatos);
         PanelCandidatos.setLayout(PanelCandidatosLayout);
         PanelCandidatosLayout.setHorizontalGroup(
@@ -217,7 +235,9 @@ public class RegistroCandidatos extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(BtCarga)
                         .addGap(18, 18, 18)
-                        .addComponent(BtRegistar, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(BtRegistar, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(BtEliminarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(PanelCandidatosLayout.createSequentialGroup()
                         .addGroup(PanelCandidatosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -240,7 +260,8 @@ public class RegistroCandidatos extends javax.swing.JFrame {
                     .addComponent(LbEstudiantes11)
                     .addComponent(ComboEstudiantes11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(BtCarga)
-                    .addComponent(BtRegistar))
+                    .addComponent(BtRegistar)
+                    .addComponent(BtEliminarCandidatos))
                 .addGap(18, 18, 18)
                 .addGroup(PanelCandidatosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
@@ -280,8 +301,33 @@ public class RegistroCandidatos extends javax.swing.JFrame {
     private void BtCargaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtCargaActionPerformed
         // TODO add your handling code here:
         llenarEstudiante();
-        JOptionPane.showMessageDialog(rootPane, "Nuevos Estudiantes Han sido Agregados");
+      
     }//GEN-LAST:event_BtCargaActionPerformed
+
+    private void BtEliminarCandidatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtEliminarCandidatosActionPerformed
+        // TODO add your handling code here:
+                
+         int confirmacion = JOptionPane.showConfirmDialog(this,
+            "¿Está seguro de que desea eliminar todos los candidatos?",
+            "Confirmar eliminación",
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirmacion == JOptionPane.YES_OPTION) {
+            boolean eliminacionExitosa = candidatosdao.borrarTodosLosCandidatos();
+            if (eliminacionExitosa) {
+               
+                JOptionPane.showMessageDialog(this,
+                    "Todos los candidatos han sido eliminados.",
+                    "Eliminación exitosa",
+                    JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Hubo un problema al eliminar los candidatos.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_BtEliminarCandidatosActionPerformed
 
     /**
      * @param args the command line arguments
@@ -320,6 +366,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtCarga;
+    private javax.swing.JButton BtEliminarCandidatos;
     private javax.swing.JButton BtRegistar;
     private javax.swing.JComboBox<String> ComboEstudiantes11;
     private javax.swing.JLabel LbEstudiantes11;

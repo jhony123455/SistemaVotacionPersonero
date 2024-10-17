@@ -57,19 +57,21 @@ public class VotoDAO {
      
       public boolean hayVotosRegistrados() throws SQLException {
         boolean hayVotos = false;
-        String sql = "SELECT COUNT(*) FROM Votos"; // Asegúrate de que el nombre de la tabla sea correcto
+        String sql = "SELECT COUNT(*) FROM Votos"; 
 
         try (Connection conn = conexion.getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
-                int conteoVotos = rs.getInt(1); // El conteo de votos está en la primera columna
-                hayVotos = conteoVotos > 0; // Si hay al menos 1 voto, retornamos true
+                int conteoVotos = rs.getInt(1); 
+                hayVotos = conteoVotos > 0; 
             }
         }
 
         return hayVotos;
     }
+    
+   
 }
 

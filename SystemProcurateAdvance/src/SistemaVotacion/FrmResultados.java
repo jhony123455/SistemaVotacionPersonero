@@ -36,14 +36,17 @@ public class FrmResultados extends javax.swing.JFrame {
     
   String [] encabezado = {"Nombre", "Apellido", "Votos Obtenidos"};  
   String[] encabezado2 = {"NºEleccion", "Total_Votos", "Fecha_Conteo"};
+    private FrmPrincipal frmPrincipal;
    GradosDAO gradosdao;
-    public FrmResultados() {
+    public FrmResultados(FrmPrincipal principal) {
         initComponents();
+        this.frmPrincipal = principal;
         gradosdao = new GradosDAO();
         cargarElecciones();
         llenarComboGrados();
         CbGrados.setVisible(false);
-       jScrollPane1.setVisible(false);
+    
+       actualizarEstadoBotonResultados(); 
         
     }
     private void llenarComboGrados() {
@@ -58,26 +61,40 @@ public class FrmResultados extends javax.swing.JFrame {
         }
     }
     
-
-    private void cargarElecciones() {
+    
+    private void actualizarEstadoBotonResultados() {
         try {
             EleccionDAO eleccionDAO = new EleccionDAO();
-            List<Eleccion> elecciones = eleccionDAO.obtenerElecciones();
-            CbElecciones.removeAllItems();
-            for (Eleccion eleccion : elecciones) {
-                CbElecciones.addItem("ID: " + eleccion.getIdeleccion() + " - Inicio: " + eleccion.getFechainicio().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            }
-            boolean hayElecciones = !elecciones.isEmpty();
-            BtTotal.setEnabled(hayElecciones);
-            BtPorGrado.setEnabled(hayElecciones);
-            BtExportar.setEnabled(hayElecciones);
-            if (!hayElecciones) {
-                JOptionPane.showMessageDialog(this, "No hay elecciones disponibles", "Información", JOptionPane.INFORMATION_MESSAGE);
-            }
+            boolean hayVotos = eleccionDAO.hayVotosRegistrados();
+            frmPrincipal.actualizarEstadoBotonResultados(hayVotos);
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar las elecciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al verificar los votos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    
+
+    private void cargarElecciones() {
+    try {
+        EleccionDAO eleccionDAO = new EleccionDAO();
+        List<Eleccion> elecciones = eleccionDAO.obtenerElecciones();
+        CbElecciones.removeAllItems();
+        for (Eleccion eleccion : elecciones) {
+            CbElecciones.addItem("ID: " + eleccion.getIdeleccion() + " - Inicio: " + eleccion.getFechainicio().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        boolean hayElecciones = !elecciones.isEmpty();
+        BtTotal.setEnabled(hayElecciones);
+        BtPorGrado.setEnabled(hayElecciones);
+        BtExportar.setEnabled(hayElecciones);
+        if (!hayElecciones) {
+            System.out.println( "No hay elecciones disponibles");
+        }
+        actualizarEstadoBotonResultados();  
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar las elecciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
 
     
     private void cargarResultadosPorCandidato(int eleccionId) {
@@ -273,6 +290,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         CbGrados = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         TableResultados = new javax.swing.JTable();
+        BtCargar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -326,43 +344,60 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         ));
         jScrollPane1.setViewportView(TableResultados);
 
+        BtCargar.setText("Cargar Elecciones");
+        BtCargar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtCargarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PanelResultLayout = new javax.swing.GroupLayout(PanelResult);
         PanelResult.setLayout(PanelResultLayout);
         PanelResultLayout.setHorizontalGroup(
             PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelResultLayout.createSequentialGroup()
-                .addGap(17, 17, 17)
                 .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BtGeneral, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BtPorGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(BtExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(51, 51, 51)
+                    .addGroup(PanelResultLayout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(BtGeneral, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(BtPorGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(BtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(BtExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(PanelResultLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(PanelResultLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(BtCargar, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap())
         );
         PanelResultLayout.setVerticalGroup(
             PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelResultLayout.createSequentialGroup()
-                .addGap(40, 40, 40)
-                .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31)
-                .addComponent(BtTotal)
-                .addGap(18, 18, 18)
-                .addComponent(BtPorGrado)
-                .addGap(20, 20, 20)
-                .addComponent(BtGeneral)
-                .addGap(18, 18, 18)
-                .addComponent(BtExportar)
-                .addGap(76, 76, 76)
-                .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelResultLayout.createSequentialGroup()
-                .addContainerGap(26, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18))
+                .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(PanelResultLayout.createSequentialGroup()
+                        .addGap(60, 60, 60)
+                        .addComponent(BtCargar)
+                        .addGap(18, 18, 18)
+                        .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(29, 29, 29)
+                        .addComponent(BtTotal)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtPorGrado)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtGeneral)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtExportar)
+                        .addGap(18, 18, 18)
+                        .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(PanelResultLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -452,6 +487,11 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         
     }//GEN-LAST:event_BtExportarActionPerformed
 
+    private void BtCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtCargarActionPerformed
+        // TODO add your handling code here:
+        cargarElecciones();
+    }//GEN-LAST:event_BtCargarActionPerformed
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -479,12 +519,13 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrmResultados().setVisible(true);
+                new FrmResultados(null).setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BtCargar;
     private javax.swing.JButton BtExportar;
     private javax.swing.JButton BtGeneral;
     private javax.swing.JButton BtPorGrado;

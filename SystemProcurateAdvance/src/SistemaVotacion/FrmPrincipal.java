@@ -56,11 +56,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private FrmLogin login;
     private FrmResultados resultados;
     private Votarr vota;
-   
           
 
     public FrmPrincipal(Usuario user) {
         initComponents();
+        
         setupLayout();
         icon();
         inicializarFormularios();
@@ -70,12 +70,13 @@ public class FrmPrincipal extends javax.swing.JFrame {
         btnFiltrar.setEnabled(false);
         btnVotacion.setEnabled(false);
         btnResultados.setEnabled(false);
-        btnEliminarCandidatos.setEnabled(false);
+       
         estudiantesdao = new EstudiantesDAO();
         candidatosdao= new CandidatosDAO();
         actualizarEstado();
         registrarTemas();
         crearBotonCambiarTema();
+
         
           addWindowListener(new WindowAdapter() {
             @Override
@@ -86,7 +87,15 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
     }
     
-    public void actualizarDespuesDeEliminarCandidatos() {
+    
+       public void actualizarEstadoBotonResultados(boolean hayVotos) {
+        btnResultados.setEnabled(hayVotos);
+    }
+
+   
+
+    
+    /*public void actualizarDespuesDeEliminarCandidatos() {
         SwingUtilities.invokeLater(() -> {
             actualizarEstado();
             verificarCondicionesVotacion();
@@ -98,7 +107,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     JOptionPane.INFORMATION_MESSAGE);
             }
         });
-    }
+    }*/
 
    
     
@@ -148,39 +157,36 @@ public class FrmPrincipal extends javax.swing.JFrame {
         btnVotacion.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         btnResultados.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         BtTheme.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
-        btnEliminarCandidatos.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         BtCerrar.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
 
     }
 
-   public void actualizarEstado() {
-    estudiantesGrado11 = estudiantesdao.contarEstudiantesGrado11();
-    estudianteV = estudiantesdao.contarTodosEstudiantes();
-    int[] conteoEstudiantes = new int[11];
-    for (int grado = 1; grado <= 11; grado++) {
-        conteoEstudiantes[grado - 1] = estudiantesdao.contarEstudiantesGrado(grado);
-    }
-    btnRegistrarCandidatos.setEnabled(estudiantesGrado11 >= 3);
-    btnFiltrar.setEnabled(estudianteV > 0);
+    public void actualizarEstado() {
+        estudiantesGrado11 = estudiantesdao.contarEstudiantesGrado11();
+        estudianteV = estudiantesdao.contarTodosEstudiantes();
+        int[] conteoEstudiantes = new int[11];
+        for (int grado = 1; grado <= 11; grado++) {
+            conteoEstudiantes[grado - 1] = estudiantesdao.contarEstudiantesGrado(grado);
+        }
+        btnRegistrarCandidatos.setEnabled(estudiantesGrado11 >= 3);
+        btnFiltrar.setEnabled(estudianteV > 0);
 
-    verificarCondicionesVotacion();
-
-    try {
-        EleccionDAO eleccionDAO = new EleccionDAO();
-        boolean hayVotos = eleccionDAO.hayVotosRegistrados();
-        boolean eleccionActiva = eleccionDAO.hayEleccionActiva();
+        verificarCondicionesVotacion();
         
-   
-        if (!eleccionActiva && hayVotos) {
-            btnResultados.setEnabled(true);
-        } else {
-            btnResultados.setEnabled(false);
+        
+        try {
+            EleccionDAO eleccionDAO = new EleccionDAO();
+            boolean hayVotos = eleccionDAO.hayVotosRegistrados();
+            if (hayVotos) {
+                btnResultados.setEnabled(true);
+            } else {
+                btnResultados.setEnabled(false);
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error al verificar los votos: " + ex.getMessage());
         }
 
-    } catch (SQLException ex) {
-        System.out.println("Error al verificar los votos: " + ex.getMessage());
     }
-}
 
 
 
@@ -196,7 +202,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         }
 
         btnVotacion.setEnabled(hayEstudiantesEnCadaGrado && candidatosRegistrados >= 3);
-        btnEliminarCandidatos.setEnabled(candidatosRegistrados > 0);
+        /*btnEliminarCandidatos.setEnabled(candidatosRegistrados > 0);*/
         
         System.out.println("Candidatos registrados: " + candidatosRegistrados);
         System.out.println("Botón de votación habilitado: " + btnVotacion.isEnabled());
@@ -209,11 +215,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
         mostrarEstudiantes = new MostrarEstudiantes();
         registroCandidatos = new RegistroCandidatos();
         registroCandidatos.setFormularioPrincipal(this);
-        crearVotacion = new FrmCrearVotación();
+        crearVotacion = new FrmCrearVotación(this);
         crearVotacion.setFormularioPrincipal(this);
-        vota = new Votarr();
-        vota.setFormularioPrincipal(this);
-        resultados = new FrmResultados();
+        resultados = new FrmResultados(this);
         content.setLayout(new CardLayout());
         content.add(contenidoPrincipal.getBgPanel(), "contenidoPrincipal");
         content.add(registroEstudiantes.getPanel(), "registroEstudiantes");
@@ -358,7 +362,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
         btnFiltrar = new javax.swing.JButton();
         btnVotacion = new javax.swing.JButton();
         btnResultados = new javax.swing.JButton();
-        btnEliminarCandidatos = new javax.swing.JButton();
         BtCerrar = new javax.swing.JButton();
         BtTheme = new javax.swing.JButton();
         header = new javax.swing.JPanel();
@@ -463,16 +466,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
             }
         });
 
-        btnEliminarCandidatos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/usuario.png"))); // NOI18N
-        btnEliminarCandidatos.setText("Eliminar candidatos");
-        btnEliminarCandidatos.setBorder(null);
-        btnEliminarCandidatos.setBorderPainted(false);
-        btnEliminarCandidatos.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEliminarCandidatosActionPerformed(evt);
-            }
-        });
-
         BtCerrar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/cerrar-sesion.png"))); // NOI18N
         BtCerrar.setText("Cerrar Sesion");
         BtCerrar.setBorder(null);
@@ -493,21 +486,19 @@ public class FrmPrincipal extends javax.swing.JFrame {
             menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(BtTheme, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(menuLayout.createSequentialGroup()
-                .addGroup(menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
-                            .addGap(115, 115, 115)
-                            .addComponent(lbMenu))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
-                            .addGap(50, 50, 50)
-                            .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(btnRegistrarEstudiantes, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                        .addComponent(btnResultados, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                        .addComponent(btnVotacion, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                        .addComponent(btnFiltrar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                        .addComponent(btnRegistrarCandidatos, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                        .addComponent(BtCerrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(btnEliminarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
+                        .addGap(115, 115, 115)
+                        .addComponent(lbMenu))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnRegistrarEstudiantes, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnResultados, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnVotacion, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnFiltrar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnRegistrarCandidatos, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(BtCerrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         menuLayout.setVerticalGroup(
@@ -533,12 +524,10 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         .addGap(50, 50, 50)
                         .addComponent(btnRegistrarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnEliminarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(BtTheme, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(BtCerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(144, Short.MAX_VALUE))
+                .addContainerGap(187, Short.MAX_VALUE))
         );
 
         header.setBackground(new java.awt.Color(25, 118, 210));
@@ -634,29 +623,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
         cargarVotacion();
     }//GEN-LAST:event_btnVotacionActionPerformed
 
-    private void btnEliminarCandidatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarCandidatosActionPerformed
- int confirmacion = JOptionPane.showConfirmDialog(this,
-            "¿Está seguro de que desea eliminar todos los candidatos?",
-            "Confirmar eliminación",
-            JOptionPane.YES_NO_OPTION);
-        
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            boolean eliminacionExitosa = candidatosdao.borrarTodosLosCandidatos();
-            if (eliminacionExitosa) {
-                actualizarDespuesDeEliminarCandidatos();
-                JOptionPane.showMessageDialog(this,
-                    "Todos los candidatos han sido eliminados.",
-                    "Eliminación exitosa",
-                    JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                    "Hubo un problema al eliminar los candidatos.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }//GEN-LAST:event_btnEliminarCandidatosActionPerformed
-
     private void BtCerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtCerrarActionPerformed
         cerrarSesion();
     }//GEN-LAST:event_BtCerrarActionPerformed
@@ -710,7 +676,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton BtCerrar;
     private javax.swing.JButton BtTheme;
     private javax.swing.JPanel background;
-    private javax.swing.JButton btnEliminarCandidatos;
     private javax.swing.JButton btnFiltrar;
     private javax.swing.JButton btnRegistrarCandidatos;
     private javax.swing.JButton btnRegistrarEstudiantes;

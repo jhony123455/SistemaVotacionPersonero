@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
@@ -36,6 +35,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import com.formdev.flatlaf.intellijthemes.FlatXcodeDarkIJTheme;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 
@@ -47,9 +51,8 @@ public class Votarr extends javax.swing.JFrame {
 
     private boolean votando = true;
     private Timer timer;
-    private Timer verificarTimer;
     private static final Logger LOGGER = Logger.getLogger(Votarr.class.getName());
-
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private VotoDAO votoDAO;
     private EstudiantesDAO estudianteDAO;
     private CandidatosDAO candidatoDAO;
@@ -59,9 +62,13 @@ public class Votarr extends javax.swing.JFrame {
      private FrmPrincipal formularioPrincipal;
     
     private boolean votacionIniciada = false; 
+    private final LocalDateTime fechaFinalizacion;
+    private boolean votacionFinalizada = false;
 
-    public Votarr() {
+    public Votarr(FrmPrincipal principal, LocalDateTime fechaFinalizacion) {
         initComponents();
+        this.formularioPrincipal = principal;
+        this.fechaFinalizacion = fechaFinalizacion;
         Reloj reloj = new Reloj(lbreloj);
         reloj.start();
         stlyes();
@@ -74,32 +81,33 @@ public class Votarr extends javax.swing.JFrame {
         cargarEstudiantes();
         llenarRadioButtonsConCandidatos();
         CbEstudiante.setEnabled(false);
+        
+        
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 verificarYCerrar();
+                 if (formularioPrincipal != null) {
+                    formularioPrincipal.setEnabled(true);  
+                    formularioPrincipal.actualizarEstado();  
+                } 
             }
         });
 
-        
         iconosRb();
-        
+
     }
-      public void setFormularioPrincipal(FrmPrincipal formularioPrincipal) {
-        this.formularioPrincipal = formularioPrincipal;
-    }
-    
-    
-    public void stlyes(){
-      lbreloj.putClientProperty(FlatClientProperties.STYLE, ""
+
+    public void stlyes() {
+        lbreloj.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font: bold 48 $h1.font;"
                 + "foreground: #00FF00;"
                 + "background: #1E1E1E;"
                 + "opaque: true");
     }
-    
+
     public void iniciarProcesoDeMostraryVotacion() {
         if (!votacionIniciada) {
             inicializarEstadoEleccion();
@@ -108,143 +116,108 @@ public class Votarr extends javax.swing.JFrame {
     }
 
     private void inicializarEstadoEleccion() {
-    try {
-        LOGGER.info("Verificando estado inicial de elección");
-        boolean eleccionActiva = elecciondao.hayEleccionActiva();
-        LOGGER.info("Estado inicial de la elección: " + (eleccionActiva ? "Activa" : "Inactiva"));
-        
-        if (eleccionActiva) {
-            LOGGER.info("Elección activa encontrada. Iniciando votación.");
-            iniciarVotacion();
-            iniciarVerificacionPeriodica(); 
-        } else {
-            LOGGER.info("No hay elección activa al inicio.");
-            actualizarUINoEleccion();
-          
-            iniciarVerificacionPeriodica();
+        try {
+            LOGGER.info("Verificando estado inicial de elección");
+            boolean eleccionActiva = elecciondao.hayEleccionActiva();
+            LOGGER.info("Estado inicial de la elección: " + (eleccionActiva ? "Activa" : "Inactiva"));
+
+            if (eleccionActiva) {
+                LOGGER.info("Elección activa encontrada. Iniciando votación.");
+                iniciarVotacion();
+                iniciarVerificacionPeriodica();
+            } else {
+                LOGGER.info("No hay elección activa al inicio.");
+                actualizarUINoEleccion();
+
+                iniciarVerificacionPeriodica();
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Error al verificar el estado inicial de la elección", ex);
         }
-    } catch (SQLException ex) {
-        LOGGER.log(Level.SEVERE, "Error al verificar el estado inicial de la elección", ex);
     }
-  }
 
     private void actualizarUINoEleccion() {
-    SwingUtilities.invokeLater(() -> {
-        JOptionPane.showMessageDialog(this, "No hay elección activa en este momento. La ventana permanecerá abierta.");
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-    });
-  }
+        SwingUtilities.invokeLater(() -> {
+            LOGGER.log(Level.SEVERE, "No hay elección activa en este momento. La ventana permanecerá abierta.");
+            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        });
+    }
 
     private void iniciarVerificacionPeriodica() {
-        ActionListener taskPerformer = e -> verificarEstadoEleccion();
-        timer = new Timer(60000, taskPerformer);
-        timer.start();
+        scheduler.scheduleAtFixedRate(this::verificarEstadoEleccion, 0, 1, TimeUnit.SECONDS);
     }
 
     private void verificarEstadoEleccion() {
-        try {
-            boolean eleccionActiva = elecciondao.hayEleccionActiva();
-            boolean hayVotos = elecciondao.hayVotosRegistrados();
-
-            // Si la elección ha finalizado, finalizamos la votación
-            if (!eleccionActiva && votando) {
-                finalizarVotacion();
-            } else if (eleccionActiva && !votando) {
-                iniciarVotacion();
-            }
-
-            
-            SwingUtilities.invokeLater(() -> {
-                formularioPrincipal.actualizarEstado(); 
-            });
-
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error al verificar el estado de la elección", ex);
+        LocalDateTime ahora = LocalDateTime.now();
+        if (ahora.isAfter(fechaFinalizacion) && votando) {
+            SwingUtilities.invokeLater(this::finalizarVotacion);
+        } else if (ahora.isBefore(fechaFinalizacion) && !votando) {
+            SwingUtilities.invokeLater(this::iniciarVotacion);
         }
     }
 
-
-
-
     private void iniciarVotacion() {
         votando = true;
-        iniciarProcesoDeVerificacionResultados();
+        votacionFinalizada = false;
         SwingUtilities.invokeLater(() -> {
-
+            CbEstudiante.setEnabled(true);
         });
     }
 
     private void finalizarVotacion() {
         votando = false;
-
-        if (timer != null && timer.isRunning()) {
-            timer.stop();
-        }
-
-        try {
-        
-            boolean hayVotos = votoDAO.hayVotosRegistrados();
-
-         
-            SwingUtilities.invokeLater(() -> {
-                
-                JOptionPane.showMessageDialog(this, "La elección ha terminado. Puedes cerrar la ventana.");
-
-             
-                setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-             
+        votacionFinalizada = true;
+        scheduler.shutdown();
+        SwingUtilities.invokeLater(() -> {
+            mostrarMensajeFinalizacion();
+            setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            if (formularioPrincipal != null) {
                 formularioPrincipal.actualizarEstado();
-            });
-
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Error al verificar los votos registrados", ex);
-            JOptionPane.showMessageDialog(this, "Error al verificar los votos registrados.");
-        }
-
-     
-        if (formularioPrincipal != null) {
-            formularioPrincipal.actualizarEstado();
-        } else {
-            System.out.println("Referencia a formularioPrincipal es nula");
-        }
+            }
+        });
     }
 
-
-
+    private void mostrarMensajeFinalizacion() {
+        JOptionPane.showMessageDialog(this, "La elección ha terminado. Puedes cerrar la ventana.");
+    }
 
     private void verificarYCerrar() {
-    try {
-        boolean eleccionActiva = elecciondao.hayEleccionActiva();
-        if (!eleccionActiva && votando) {
+        if (votando) {
             JOptionPane.showMessageDialog(this, "La votación está en curso. No puedes salir.");
-        } else if (!eleccionActiva && !votando) {
+        } else if (votacionFinalizada) {
+            mostrarMensajeFinalizacion();
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Esperando el inicio de una nueva elección.");
+            dispose();
         }
-    } catch (SQLException ex) {
-        LOGGER.log(Level.SEVERE, "Error al verificar el estado de la elección", ex);
-        JOptionPane.showMessageDialog(this, "Error al verificar el estado de la elección. No se puede cerrar la ventana.");
     }
-  } 
 
     @Override
     public void dispose() {
-        if (timer != null && timer.isRunning()) {
-            timer.stop();
-        }
+        scheduler.shutdownNow();
         super.dispose();
-    }
-    
-    
-    public void iniciarProcesoDeVerificacionResultados() {
-        // Verificación periódica cada minuto (60000 milisegundos)
-        ActionListener verificarEstado = e -> verificarEstadoEleccion();
-        verificarTimer = new Timer(60000, verificarEstado);
-        verificarTimer.start();
+         if (formularioPrincipal != null) {
+            formularioPrincipal.setEnabled(true);
+            formularioPrincipal.actualizarEstado();
+        }
     }
 
+    @Override
+    protected void processMouseEvent(MouseEvent e) {
+        if (votacionFinalizada) {
+            mostrarMensajeFinalizacion();
+        }
+        super.processMouseEvent(e);
+    }
+
+    @Override
+    protected void processKeyEvent(KeyEvent e) {
+        if (votacionFinalizada) {
+            mostrarMensajeFinalizacion();
+        }
+        super.processKeyEvent(e);
+    }
+    
     private void cargarGrados() {
         GradosDAO gradosDAO = new GradosDAO();
         List<Grados> listaGrados = gradosDAO.obtenerGrados();
@@ -281,7 +254,7 @@ public class Votarr extends javax.swing.JFrame {
         try {
             Eleccion eleccionActual = elecciondao.obtenerEleccionActual();
             if (eleccionActual == null) {
-                JOptionPane.showMessageDialog(this, "No hay una elección activa en este momento.");
+               
                 return;
             }
 
@@ -297,7 +270,7 @@ public class Votarr extends javax.swing.JFrame {
             }
 
             if (listaCandidatos.size() < 3) {
-                JOptionPane.showMessageDialog(this, "No hay suficientes candidatos para votar.");
+                
                 return;
             }
 
@@ -590,7 +563,8 @@ public class Votarr extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Votarr().setVisible(true);
+            LocalDateTime fechaFin = LocalDateTime.now();
+                new Votarr(null, fechaFin).setVisible(true);
             }
         });
     }

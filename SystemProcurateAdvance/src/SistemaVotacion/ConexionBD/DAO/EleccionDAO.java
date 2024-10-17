@@ -76,13 +76,30 @@ public class EleccionDAO {
 
     private static final Logger LOGGER = Logger.getLogger(EleccionDAO.class.getName());
 
+    public LocalDateTime obtenerTiempoFinalizacion() throws SQLException {
+        String sql = "SELECT fecha_Fin FROM Eleccion WHERE fecha_Inicio <= ? AND fecha_Fin > ? ORDER BY fecha_Fin ASC LIMIT 1";
+        LocalDateTime now = LocalDateTime.now();
+
+        try (Connection con = conexion.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setTimestamp(1, Timestamp.valueOf(now));
+            stmt.setTimestamp(2, Timestamp.valueOf(now));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getTimestamp("fecha_Fin").toLocalDateTime();
+                }
+            }
+        }
+        return null;
+    }
+
     public boolean hayEleccionActiva() throws SQLException {
-        String sql = "{CALL hayEleccionActiva(?)}";
+        String sql = "SELECT COUNT(*) FROM Eleccion WHERE fecha_Inicio <= ? AND fecha_Fin > ?";
+        LocalDateTime now = LocalDateTime.now();
+
         try (Connection conn = conexion.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            LocalDateTime ahora = LocalDateTime.now();
-            pstmt.setTimestamp(1, Timestamp.valueOf(ahora));
-
+            pstmt.setTimestamp(1, Timestamp.valueOf(now));
+            pstmt.setTimestamp(2, Timestamp.valueOf(now));
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -94,6 +111,17 @@ public class EleccionDAO {
         }
         LOGGER.info("No se encontraron elecciones activas");
         return false;
+    }
+
+    public void actualizarEstadoEleccion(int idEleccion, String nuevoEstado) throws SQLException {
+        String sql = "UPDATE Eleccion SET Estado = ? WHERE Id_Eleccion = ?";
+        try (Connection conn = conexion.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nuevoEstado);
+            pstmt.setInt(2, idEleccion);
+            int filasAfectadas = pstmt.executeUpdate();
+            LOGGER.info("Filas afectadas al actualizar el estado de la elección: " + filasAfectadas);
+        }
     }
     
     public boolean hayVotosRegistrados() throws SQLException {
@@ -123,6 +151,15 @@ public class EleccionDAO {
     }
     return elecciones;
 }
+
+    public boolean hayEleccionFinalizada() throws SQLException {
+        String query = "SELECT Estado FROM Eleccion WHERE Estado = 'Finalizada'";
+        try (Connection conn = conexion.getConnection(); PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
+
+           
+            return rs.next();
+        }
+    }
 
 
 
