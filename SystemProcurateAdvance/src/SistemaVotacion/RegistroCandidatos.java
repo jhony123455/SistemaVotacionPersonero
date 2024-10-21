@@ -9,7 +9,10 @@ import SistemaVotacion.Modelos.Estudiantes;
 import SistemaVotacion.Modelos.Candidatos;
 import SistemaVotacion.ConexionBD.DAO.CandidatosDAO;
 import SistemaVotacion.ConexionBD.DAO.EstudiantesDAO;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -40,7 +43,8 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         TxtCandidato2.setText("");
         TxtCandidato3.setText("");
         llenarEstudiante();
-        BtEliminarCandidatos.setVisible(false);
+        BtEliminarCandidatos.setVisible(true);
+        actualizarInterfazCandidatos();
                 
    
         
@@ -72,49 +76,51 @@ public class RegistroCandidatos extends javax.swing.JFrame {
     }
     
     public boolean registrarCandidatos() {
-        
-        List<Candidatos> candidatosRegistrados = candidatosdao.obtenerTodosLosCandidatos();
-        if (candidatosRegistrados.size() >= 3) {
-            BtEliminarCandidatos.setVisible(true);
-            JOptionPane.showMessageDialog(this, "Ya se han registrado 3 candidatos. No se pueden agregar más.");
+        try {
+            List<Candidatos> candidatosRegistrados = candidatosdao.obtenerCandidatosActivos();
+            if (candidatosRegistrados.size() >= 3) {
+                JOptionPane.showMessageDialog(this, "Ya se han registrado 3 candidatos activos. No se pueden agregar más.");
+                return false;
+            }
+
+            String estudianteSeleccionado = (String) ComboEstudiantes11.getSelectedItem();
+            if (estudianteSeleccionado == null || estudianteSeleccionado.equals("Selecciona Estudiante")) {
+                JOptionPane.showMessageDialog(this, "Por favor, seleccione un estudiante de 11°.");
+                return false;
+            }
+
+            Estudiantes estudiante = buscarEstudiantePorNombreCompleto(estudianteSeleccionado);
+            if (estudiante == null) {
+                JOptionPane.showMessageDialog(this, "El estudiante seleccionado no es válido.");
+                return false;
+            }
+
+            if (candidatoYaRegistrado(estudiante)) {
+                JOptionPane.showMessageDialog(this, "Este estudiante ya está registrado como candidato.");
+                return false;
+            }
+
+            propuesta = JOptionPane.showInputDialog(this, "Ingrese la propuesta para " + estudianteSeleccionado + ":");
+            if (propuesta == null || propuesta.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Debe ingresar una propuesta válida.");
+                return false;
+            }
+
+            Candidatos nuevoCandidato = new Candidatos(1, estudiante, propuesta);
+            boolean registroExitoso = candidatosdao.agregarCandidato(nuevoCandidato);
+            if (registroExitoso) {
+                actualizarInterfazCandidatos();
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al registrar el candidato en la base de datos.");
+                return false;
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al registrar el candidato: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        String estudianteSeleccionado = (String) ComboEstudiantes11.getSelectedItem();
-
-        if (estudianteSeleccionado == null || estudianteSeleccionado.equals("Selecciona Estudiante")) {
-            JOptionPane.showMessageDialog(this, "Por favor, seleccione un estudiante de 11°.");
-            return false;
-        }
-
-        Estudiantes estudiante = buscarEstudiantePorNombreCompleto(estudianteSeleccionado);
-        if (estudiante == null) {
-            JOptionPane.showMessageDialog(this, "El estudiante seleccionado no es válido.");
-            return false;
-        }
-
-        if (candidatoYaRegistrado(estudiante)) {
-            JOptionPane.showMessageDialog(this, "Este estudiante ya está registrado como candidato.");
-            return false;
-        }
-
-        propuesta = JOptionPane.showInputDialog(this, "Ingrese la propuesta para " + estudianteSeleccionado + ":");
-        if (propuesta == null || propuesta.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Debe ingresar una propuesta válida.");
-            return false;
-        }
-
-        Candidatos nuevoCandidato = new Candidatos(1, estudiante, propuesta);
-        boolean registroExitoso = candidatosdao.agregarCandidato(nuevoCandidato);
-
-        if (registroExitoso) {
-            actualizarInterfazCandidato(estudianteSeleccionado);
-           
-            return true;
-        } else {
-            JOptionPane.showMessageDialog(this, "Error al registrar el candidato en la base de datos.");
-        }
-       return false; 
     }
+
 
     public JPanel getPanel() {
         return PanelCandidatos;
@@ -133,23 +139,52 @@ public class RegistroCandidatos extends javax.swing.JFrame {
     }
 
     private boolean candidatoYaRegistrado(Estudiantes estudiante) {
-        List<Candidatos> candidatos = candidatosdao.obtenerTodosLosCandidatos();
-        for (Candidatos candidato : candidatos) {
-            if (candidato.getEstudiante().getId() == estudiante.getId()) {
-                return true;
+        try {
+            List<Candidatos> candidatos = candidatosdao.obtenerCandidatosActivos();
+            for (Candidatos candidato : candidatos) {
+                if (candidato.getEstudiante().getId() == estudiante.getId()) {
+                    return true;
+                }
             }
+            return false;
+        } catch (SQLException ex) {
+            Logger.getLogger(RegistroCandidatos.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
     }
 
-    private void actualizarInterfazCandidato(String nombreCompleto) {
-        for (JTextField txtCandidato : new JTextField[]{TxtCandidato1, TxtCandidato2, TxtCandidato3}) {
-            if (txtCandidato.getText().isEmpty()) {
-                txtCandidato.setText(nombreCompleto);
-                break;
+
+    private void actualizarInterfazCandidatos() {
+        try {
+            List<Candidatos> candidatosRegistrados = candidatosdao.obtenerCandidatosActivos();
+
+           
+            TxtCandidato1.setText("");
+            TxtCandidato2.setText("");
+            TxtCandidato3.setText("");
+
+            int index = 0;
+            for (Candidatos candidato : candidatosRegistrados) {
+                if (candidato.isActivo() && index < 3) {
+                    switch (index) {
+                        case 0:
+                            TxtCandidato1.setText(candidato.getEstudiante().getNombre() + " " + candidato.getEstudiante().getApellido());
+                            break;
+                        case 1:
+                            TxtCandidato2.setText(candidato.getEstudiante().getNombre() + " " + candidato.getEstudiante().getApellido());
+                            break;
+                        case 2:
+                            TxtCandidato3.setText(candidato.getEstudiante().getNombre() + " " + candidato.getEstudiante().getApellido());
+                            break;
+                    }
+                    index++;
+                }
             }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al actualizar la interfaz de candidatos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     
     
     
@@ -307,24 +342,29 @@ public class RegistroCandidatos extends javax.swing.JFrame {
     private void BtEliminarCandidatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtEliminarCandidatosActionPerformed
         // TODO add your handling code here:
                 
-         int confirmacion = JOptionPane.showConfirmDialog(this,
-            "¿Está seguro de que desea eliminar todos los candidatos?",
-            "Confirmar eliminación",
-            JOptionPane.YES_NO_OPTION);
-        
+        int confirmacion = JOptionPane.showConfirmDialog(this,
+                "¿Está seguro de que desea eliminar todos los candidatos?",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION);
+
         if (confirmacion == JOptionPane.YES_OPTION) {
-            boolean eliminacionExitosa = candidatosdao.borrarTodosLosCandidatos();
-            if (eliminacionExitosa) {
-               
-                JOptionPane.showMessageDialog(this,
-                    "Todos los candidatos han sido eliminados.",
-                    "Eliminación exitosa",
-                    JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                    "Hubo un problema al eliminar los candidatos.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            try {
+                boolean eliminacionExitosa = candidatosdao.desactivarTodosLosCandidatos();
+                if (eliminacionExitosa) {
+                    JOptionPane.showMessageDialog(this,
+                            "Todos los candidatos han sido eliminados.",
+                            "Eliminación exitosa",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    actualizarInterfazCandidatos();
+                    formularioPrincipal.actualizarEstado();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Hubo un problema al eliminar los candidatos.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Error al eliminar los candidatos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_BtEliminarCandidatosActionPerformed

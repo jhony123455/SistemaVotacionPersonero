@@ -186,7 +186,7 @@ public class FrmLogin extends javax.swing.JFrame {
     private void btnIniciarSesionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarSesionActionPerformed
         if (!txtUsuario.getText().isEmpty() && !pfPass.getText().isEmpty()) {
             UsuarioDAO usuarioDAO = new UsuarioDAO();
-            Usuario usuarioAutenticado = usuarioDAO.autentificar(txtUsuario.getText(), pfPass.getText());
+            Usuario usuarioAutenticado = usuarioDAO.autenticar(txtUsuario.getText(), pfPass.getText());
 
             if (usuarioAutenticado != null) {
 

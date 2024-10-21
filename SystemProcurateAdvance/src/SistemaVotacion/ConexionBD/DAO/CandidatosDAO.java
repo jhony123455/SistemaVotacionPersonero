@@ -113,4 +113,32 @@ public class CandidatosDAO {
         return false;
     }
 }
+    public List<Candidatos> obtenerCandidatosActivos() throws SQLException {
+        List<Candidatos> candidatos = new ArrayList<>();
+        String sql = "SELECT c.*, e.Nombre AS nombre, e.Apellido AS apellido, e.Documento AS documento, e.Id_Estudiante AS idEstudiante FROM Candidato c JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante WHERE c.activo = TRUE";
+        try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Candidatos candidato = new Candidatos(
+                        rs.getInt("Id_Candidato"),
+                        new Estudiantes(rs.getInt("idEstudiante"), rs.getString("nombre"), rs.getString("documento"), rs.getString("apellido")),
+                        rs.getString("Propuesta")
+                );
+                candidato.setActivo(rs.getBoolean("activo"));
+                candidatos.add(candidato);
+            }
+        }
+        return candidatos;
+    }
+    
+    
+    public boolean desactivarTodosLosCandidatos() throws SQLException {
+        String sql = "UPDATE Candidato SET activo = FALSE WHERE activo = TRUE";
+        try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
+        }
+    }
+
+
 }

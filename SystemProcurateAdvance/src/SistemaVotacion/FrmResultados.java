@@ -29,6 +29,7 @@ import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import login.Sesion;
 import login.Usuario;
 
 
@@ -239,24 +240,29 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
 
     
     
-    public void login(JTable tabla, String ruta, String[] encabezado) {
+    public void loginParaExportar(JTable tabla, String ruta, String[] encabezado) {
         JTextField usr = new JTextField();
         int actionLogin = JOptionPane.showConfirmDialog(null, usr, "Usuario", JOptionPane.OK_CANCEL_OPTION);
+
         if (actionLogin > 0) {
             JOptionPane.showMessageDialog(null, "Operación cancelada");
         } else {
             JPasswordField pwd = new JPasswordField();
             int action = JOptionPane.showConfirmDialog(null, pwd, "Contraseña", JOptionPane.OK_CANCEL_OPTION);
+
             if (action > 0) {
                 JOptionPane.showMessageDialog(null, "Operación cancelada");
             } else {
                 String usuario = usr.getText();
                 String pass = new String(pwd.getPassword());
+
                 UsuarioDAO usuarioDAO = new UsuarioDAO();
-                Usuario user = usuarioDAO.autentificar(usuario, pass);
-                if (user != null && user.getIdRol() == 1) { 
+                Usuario user = usuarioDAO.autenticar(usuario, pass); 
+
+                if (user != null && user.getIdRol() == 1) {  
+                    Sesion.usuarioActual = user; 
                     try {
-                        ExportToExcel(tabla, ruta, encabezado);
+                        ExportToExcel(tabla, ruta, encabezado);  
                     } catch (WriteException e) {
                         e.printStackTrace();
                     }
@@ -266,6 +272,28 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
             }
         }
     }
+
+    public void verificarYExportar(JTable tabla, String ruta, String[] encabezado) {
+       
+        if (Sesion.haySesionActiva()) {
+         
+            if (Sesion.esAdmin()) {
+                try {
+                    ExportToExcel(tabla, ruta, encabezado);  
+                    return;
+                } catch (WriteException e) {
+                    e.printStackTrace();
+                }
+            } else {
+              
+                loginParaExportar(tabla, ruta, encabezado);
+            }
+        } else {
+            // Si no hay sesión, pedir login
+            loginParaExportar(tabla, ruta, encabezado);
+        }
+    }
+
     
     
       public JPanel getPanel() {
@@ -483,7 +511,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
 
     private void BtExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtExportarActionPerformed
         // TODO add your handling code here:
-        login(TableResultados, "resultados.xls", encabezado);
+        verificarYExportar(TableResultados, "resultados.xls", encabezado);
         
     }//GEN-LAST:event_BtExportarActionPerformed
 

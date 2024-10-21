@@ -15,12 +15,14 @@ public class Candidatos {
   private String propuesta;
   private int idCandidato;
   private int votosObtenidos;
+  private boolean activo;
 
     public Candidatos(int idCandidato, Estudiantes estudiante, String propuesta) {
         this.idCandidato=idCandidato;
         this.estudiante = estudiante;
         this.propuesta = propuesta;
         this.votosObtenidos = 0;
+        this.activo=true;
     }
 
     public int getIdCandidato() {
@@ -47,6 +49,16 @@ public class Candidatos {
     public void setVotosObtenidos(int votosObtenidos) {
         this.votosObtenidos = votosObtenidos;
     }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+    
+    
   
     @Override
     public String toString() {

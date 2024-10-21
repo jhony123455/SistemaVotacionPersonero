@@ -25,6 +25,7 @@ import jxl.write.Label;
 import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import login.Sesion;
 import login.Usuario;
 
 
@@ -49,7 +50,11 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
         gradosdao= new GradosDAO();
         candidatosdao= new CandidatosDAO();
         llenarComboGrados();
-        FiltroCandidatos();
+        try {
+            FiltroCandidatos();
+        } catch (SQLException ex) {
+            Logger.getLogger(MostrarEstudiantes.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
       
     }
@@ -98,11 +103,11 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
 
     }
 
-    public void FiltroCandidatos() {
+    public void FiltroCandidatos() throws SQLException {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(encabezado2);
 
-        List<Candidatos> candidatos = candidatosdao.obtenerTodosLosCandidatos();
+        List<Candidatos> candidatos = candidatosdao.obtenerCandidatosActivos();
 
         for (Candidatos candidato : candidatos) {
             String nombreCompleto = candidato.getEstudiante().getNombre() + " " + candidato.getEstudiante().getApellido();
@@ -170,10 +175,6 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
         }
     }
 
-
-
-    
-    
     public void loginParaExportarTablas(JTable tablaEstudiantes, JTable tablaCandidatos, String rutaBase) {
         JTextField usr = new JTextField();
         int actionLogin = JOptionPane.showConfirmDialog(null, usr, "Usuario", JOptionPane.OK_CANCEL_OPTION);
@@ -188,8 +189,9 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
                 String usuario = usr.getText();
                 String pass = new String(pwd.getPassword());
                 UsuarioDAO usuarioDAO = new UsuarioDAO();
-                Usuario user = usuarioDAO.autentificar(usuario, pass);
-                if (user != null && user.getIdRol() == 1) {
+                Usuario user = usuarioDAO.autenticar(usuario, pass);  
+
+                if (user != null && Sesion.esAdmin()) {
                     try {
                         ExportarTablasAExcel(tablaEstudiantes, tablaCandidatos, rutaBase);
                     } catch (WriteException e) {
@@ -201,6 +203,31 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
             }
         }
     }
+
+
+    public void verificarYExportar(JTable tablaEstudiantes, JTable tablaCandidatos, String rutaBase) {
+       
+        if (Sesion.haySesionActiva()) {
+            if (Sesion.esAdmin()) {
+                
+                try {
+                    ExportarTablasAExcel(tablaEstudiantes, tablaCandidatos, rutaBase);
+                    return;
+                } catch (WriteException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                
+                loginParaExportarTablas(tablaEstudiantes, tablaCandidatos, rutaBase);
+            }
+        } else {
+           
+            loginParaExportarTablas(tablaEstudiantes, tablaCandidatos, rutaBase);
+        }
+    }
+
+
+
 
 
     
@@ -340,7 +367,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
 
     private void BtExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtExportarActionPerformed
         // TODO add your handling code here:
-        loginParaExportarTablas(TableEstudiantes, TableCandidatos, "tablas");
+        verificarYExportar(TableEstudiantes, TableCandidatos,"Tablas");
         
 
 

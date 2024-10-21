@@ -254,7 +254,6 @@ public class Votarr extends javax.swing.JFrame {
         try {
             Eleccion eleccionActual = elecciondao.obtenerEleccionActual();
             if (eleccionActual == null) {
-               
                 return;
             }
 
@@ -269,24 +268,25 @@ public class Votarr extends javax.swing.JFrame {
                 return;
             }
 
-            if (listaCandidatos.size() < 3) {
-                
+            // Obtener candidatos activos
+            List<Candidatos> candidatosActivos = candidatoDAO.obtenerCandidatosActivos();
+            if (candidatosActivos.size() < 3) {
+                JOptionPane.showMessageDialog(this, "Se requieren al menos 3 candidatos activos para votar.");
                 return;
             }
 
             Candidatos candidatoSeleccionado = null;
             if (RbC1.isSelected()) {
-                candidatoSeleccionado = listaCandidatos.get(0);
+                candidatoSeleccionado = candidatosActivos.get(0);
             } else if (RbC2.isSelected()) {
-                candidatoSeleccionado = listaCandidatos.get(1);
+                candidatoSeleccionado = candidatosActivos.get(1);
             } else if (RbC3.isSelected()) {
-                candidatoSeleccionado = listaCandidatos.get(2);
-            }else if(RbVotoenBlanco.isSelected()){
+                candidatoSeleccionado = candidatosActivos.get(2);
+            } else if (RbVotoenBlanco.isSelected()) {
                 candidatoSeleccionado = null;
             }
 
             Estudiantes estudianteSeleccionado = listaEstudiantes.get(CbEstudiante.getSelectedIndex());
-
             if (votoDAO.estudianteYaVoto(estudianteSeleccionado.getId(), eleccionActual.getIdeleccion())) {
                 JOptionPane.showMessageDialog(this, "Este estudiante ya ha votado en esta elección.");
                 return;
@@ -295,13 +295,12 @@ public class Votarr extends javax.swing.JFrame {
             Voto voto = new Voto(eleccionActual, candidatoSeleccionado, estudianteSeleccionado);
             votoDAO.guardarVoto(voto);
             JOptionPane.showMessageDialog(this, "Voto guardado exitosamente.");
-
             limpiarSeleccion();
-
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Error al guardar el voto: " + ex.getMessage());
         }
     }
+
 
     private void limpiarSeleccion() {
         RbC1.setSelected(false);
@@ -312,34 +311,36 @@ public class Votarr extends javax.swing.JFrame {
     }
 
     private void llenarRadioButtonsConCandidatos() {
+        Candidato.clearSelection(); 
+        RbC1.setText("");
+        RbC2.setText("");
+        RbC3.setText("");
 
-        Candidato.clearSelection();
+        
+        try {
+            List<Candidatos> candidatosActivos = candidatoDAO.obtenerCandidatosActivos();  
 
-        int size = listaCandidatos.size();
+            int size = Math.min(candidatosActivos.size(), 3);  
 
-        if (size > 3) {
-            size = 3;
-        }
-
-        if (size > 0) {
-            RbC1.setText(listaCandidatos.get(0).toString());
-            Candidato.add(RbC1);
-
-            if (size > 1) {
-                RbC2.setText(listaCandidatos.get(1).toString());
-                Candidato.add(RbC2);
+            if (size > 0) {
+                RbC1.setText(candidatosActivos.get(0).toString());
+                Candidato.add(RbC1);
+                if (size > 1) {
+                    RbC2.setText(candidatosActivos.get(1).toString());
+                    Candidato.add(RbC2);
+                }
+                if (size > 2) {
+                    RbC3.setText(candidatosActivos.get(2).toString());
+                    Candidato.add(RbC3);
+                }
             }
-
-            if (size > 2) {
-                RbC3.setText(listaCandidatos.get(2).toString());
-                Candidato.add(RbC3);
-            }
-            
+            RbVotoenBlanco.setText("Voto en Blanco");
+            Candidato.add(RbVotoenBlanco);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al obtener los candidatos activos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-        RbVotoenBlanco.setText("Voto en Blanco");
-         Candidato.add(RbVotoenBlanco);
-
     }
+
     
     private void iconosRb() {
         try {

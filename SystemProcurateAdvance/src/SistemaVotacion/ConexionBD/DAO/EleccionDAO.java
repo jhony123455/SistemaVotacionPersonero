@@ -94,13 +94,11 @@ public class EleccionDAO {
     }
 
     public boolean hayEleccionActiva() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Eleccion WHERE fecha_Inicio <= ? AND fecha_Fin > ?";
+        String sql = "SELECT COUNT(*) FROM Eleccion WHERE fecha_Inicio <= ? AND fecha_Fin > ? AND Estado = 'Activa'";
         LocalDateTime now = LocalDateTime.now();
-
         try (Connection conn = conexion.getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setTimestamp(1, Timestamp.valueOf(now));
             pstmt.setTimestamp(2, Timestamp.valueOf(now));
-
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     int count = rs.getInt(1);
@@ -112,6 +110,7 @@ public class EleccionDAO {
         LOGGER.info("No se encontraron elecciones activas");
         return false;
     }
+
 
     public void actualizarEstadoEleccion(int idEleccion, String nuevoEstado) throws SQLException {
         String sql = "UPDATE Eleccion SET Estado = ? WHERE Id_Eleccion = ?";

@@ -52,6 +52,13 @@ CREATE TABLE Eleccion (
     Fecha_Fin DATE
 );
 
+CREATE TABLE candidatoporeleccion (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    idCandidato INT,
+    idEleccion INT,
+    FOREIGN KEY (idCandidato) REFERENCES Candidato(Id_Candidato),
+    FOREIGN KEY (idEleccion) REFERENCES Eleccion(Id_Eleccion)
+);
 
 CREATE TABLE Voto (
     Id_Voto INT PRIMARY KEY auto_increment,
@@ -93,6 +100,8 @@ VALUES
     ('Luis', 'Martínez', '456789123', 11);
 
 
+ALTER TABLE Candidato ADD COLUMN activo BOOLEAN DEFAULT TRUE;
+
 
 ALTER TABLE Eleccion
 MODIFY COLUMN Fecha_Inicio DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -102,6 +111,8 @@ ALTER TABLE Voto MODIFY FkCandidato INT NULL;
 SELECT COUNT(*) FROM Eleccion WHERE Fecha_Inicio <= NOW() AND Fecha_Fin >= NOW();
 ALTER TABLE Eleccion
 ADD COLUMN Estado VARCHAR(20) DEFAULT 'Activa';
+
+select *from eleccion;
 
 DELIMITER //
 
@@ -194,7 +205,7 @@ END //
 
 CREATE PROCEDURE contarCandidatos()
 BEGIN
-    SELECT COUNT(*) FROM Candidato;
+      SELECT COUNT(*) FROM Candidato WHERE activo = TRUE;
 END //
 
 CREATE PROCEDURE borrarCandidatos()
@@ -204,21 +215,17 @@ END //
 
 CREATE PROCEDURE insertarEleccion(IN fecha_inicio DATETIME, IN fecha_fin DATETIME)
 BEGIN
-    DECLARE active_elections INT;
-
-
+  DECLARE active_elections INT;
     SELECT COUNT(*) INTO active_elections
     FROM Eleccion
-    WHERE NOW() BETWEEN Fecha_Inicio AND Fecha_Fin;
-
-
+    WHERE Fecha_Inicio <= NOW() AND Fecha_Fin >= NOW() AND Estado = 'Activa';
+    
     IF active_elections > 0 THEN
         SIGNAL SQLSTATE '45000' 
         SET MESSAGE_TEXT = 'No se puede crear una nueva elección mientras haya una activa';
     ELSE
-    
-        INSERT INTO Eleccion (Fecha_Inicio, Fecha_Fin) 
-        VALUES (fecha_inicio, fecha_fin);
+        INSERT INTO Eleccion (Fecha_Inicio, Fecha_Fin, Estado) 
+        VALUES (fecha_inicio, fecha_fin, 'Activa');
     END IF;
 END//
 
@@ -259,7 +266,7 @@ END //
 
 CREATE PROCEDURE ObtenerResultadosPorCandidato(IN eleccionId INT)
 BEGIN
-        SELECT 
+    SELECT 
         COALESCE(c.Id_Candidato, 0) AS ID_Candidato,
         COALESCE(e.Nombre, 'Voto en Blanco') AS Nombre,
         COALESCE(e.Apellido, '') AS Apellido,
@@ -276,11 +283,12 @@ BEGIN
         COALESCE(e.Apellido, '')
     ORDER BY 
         ID_Candidato;
-END //
+END//
+
 
 CREATE PROCEDURE ObtenerResultadosPorGrado(IN eleccionId INT, IN gradoId INT)
 BEGIN
-     SELECT 
+       SELECT 
         COALESCE(c.Id_Candidato, 0) AS ID_Candidato,
         COALESCE(e.Nombre, 'Voto en Blanco') AS Nombre,
         COALESCE(e.Apellido, '') AS Apellido,
@@ -302,6 +310,7 @@ BEGIN
         g.NombreGrado
     ORDER BY 
         g.NombreGrado, Votos_Obtenidos DESC;
+
 END //
 
 CREATE PROCEDURE LlenarResultados(IN pEleccionId INT)
@@ -333,10 +342,22 @@ SET SQL_SAFE_UPDATES = 0;//
 DELETE FROM Voto;//
 DELETE FROM Eleccion;//
 
-SET SQL_SAFE_UPDATES = 1;//
+
+
+/*CREATE TRIGGER actualizar_estado_eleccion
+AFTER UPDATE ON Eleccion
+FOR EACH ROW
+BEGIN
+    IF NEW.Fecha_Fin < NOW() THEN
+        UPDATE Eleccion
+        SET Estado = 'Finalizada'
+        WHERE Id_Eleccion = NEW.Id_Eleccion;
+    END IF;
+END //*/
 
 
 
+SET GLOBAL event_scheduler = ON;
 
 -- evento que actualiza el estado de la eleccion 
 CREATE EVENT update_election_status
@@ -347,5 +368,8 @@ BEGIN
     SET Estado = 'Finalizada'
     WHERE Fecha_Fin < NOW() AND Estado = 'Activa';
 END//
+
+
+
 
 

@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import login.Sesion;
 import login.Usuario;
 
 /**
@@ -92,7 +93,7 @@ public class UsuarioDAO {
         return resultado;
     }
     
-      public Usuario autentificar(String user, String pass) {
+     public Usuario autenticar(String user, String pass) {
         String sql = "SELECT Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado FROM Usuario WHERE Nombre_Usuario = ?";
         Usuario usuario = null;
 
@@ -108,15 +109,22 @@ public class UsuarioDAO {
 
                    
                     if (pass.equals(contrasenaBD)) {
+                       
                         if (estado) {
                             int idUsuario = rs.getInt("Id_Usuario");
+                            
                             usuario = new Usuario(idUsuario, nombreUsuario, contrasenaBD, idRol, estado);
+
+                           
+                            Sesion.iniciarSesion(usuario);
                         } else {
                             System.out.println("El usuario está deshabilitado.");
                         }
                     } else {
                         System.out.println("Contraseña incorrecta.");
                     }
+                } else {
+                    System.out.println("Usuario no encontrado.");
                 }
             }
         } catch (SQLException e) {
@@ -125,5 +133,7 @@ public class UsuarioDAO {
 
         return usuario;
     }
+
+
   
 }

@@ -108,12 +108,12 @@ public class FrmCrearVotación extends javax.swing.JFrame {
             elecciondao.insertarEleccion(fechaHoraInicio, fechaHoraFin);
             JOptionPane.showMessageDialog(this, "Elección guardada exitosamente.");
 
-            // Actualizar el estado del formulario principal
+            
             if (formularioPrincipal != null) {
                 formularioPrincipal.actualizarEstado();
             }
 
-            // Iniciar el proceso de votación si la elección comienza inmediatamente
+           
             if (fechaHoraInicio.equals(ahora) || fechaHoraInicio.isBefore(ahora)) {
                 iniciarProcesoVotacion(fechaHoraFin);
             } else {

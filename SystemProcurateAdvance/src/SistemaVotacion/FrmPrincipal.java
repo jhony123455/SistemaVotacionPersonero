@@ -76,6 +76,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         actualizarEstado();
         registrarTemas();
         crearBotonCambiarTema();
+        configurarInterfazUsuario();
 
         
           addWindowListener(new WindowAdapter() {
@@ -95,26 +96,29 @@ public class FrmPrincipal extends javax.swing.JFrame {
    
 
     
-    /*public void actualizarDespuesDeEliminarCandidatos() {
-        SwingUtilities.invokeLater(() -> {
-            actualizarEstado();
-            verificarCondicionesVotacion();
-            if (!btnVotacion.isEnabled()) {
-                mostrarPanel("contenidoPrincipal");
-                JOptionPane.showMessageDialog(this,
-                    "Se han eliminado candidatos. La votación ya no es posible.",
-                    "Votación Deshabilitada",
-                    JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-    }*/
+     private void configurarInterfazUsuario() {
+        if (usuarioActual != null) {
+       
+            verificarPrivilegios();
+        } else {
+           
+            JOptionPane.showMessageDialog(this, "Error: No se ha iniciado sesión correctamente");
+            this.dispose(); 
+         
+        }
+    }
 
    
     
-    private void verificarPrivilegios() {
-        if (usuarioActual.getIdRol() != 1) {  
-            btnFiltrar.setVisible(false);  
-           
+     private void verificarPrivilegios() {
+        if (usuarioActual != null) {
+            int idRol = usuarioActual.getIdRol();
+            if(idRol==2){
+                btnFiltrar.setEnabled(false);
+            }
+        } else {
+            
+            JOptionPane.showMessageDialog(this, "Error: Usuario no inicializado");
         }
     }
 
@@ -192,6 +196,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
     public void verificarCondicionesVotacion() {
         int candidatosRegistrados = candidatosdao.contarCandidatos();
+       
         boolean hayEstudiantesEnCadaGrado = true;
         
         for (int grado = 1; grado <= 11; grado++) {
@@ -295,20 +300,33 @@ public class FrmPrincipal extends javax.swing.JFrame {
         
     }
     
-    private void changeTheme(String temaSeleccionado){
-           try {
+    private void changeTheme(String temaSeleccionado) {
+        try {
             FlatLaf tema = temasDisponibles.get(temaSeleccionado);
-
             if (tema != null) {
+                System.out.println("Aplicando tema: " + temaSeleccionado);
+
+             
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+
+                
                 UIManager.setLookAndFeel(tema);
-               
+
+
                 SwingUtilities.updateComponentTreeUI(this);
+
+           
+          
+                this.repaint();  
+            } else {
+                throw new IllegalArgumentException("Tema no encontrado: " + temaSeleccionado);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error al aplicar el tema: " + temaSeleccionado);
         }
-     }
+    }
+
     
     private void actualizarDespuesDeBorrado() {
        
@@ -637,37 +655,25 @@ public class FrmPrincipal extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
          try {
-            UIManager.setLookAndFeel(new FlatMoonlightIJTheme()); 
+            UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        /*try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FrmPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FrmPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FrmPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FrmPrincipal.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+        
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new FrmPrincipal(null).setVisible(true);
+                 try {
+                EleccionDAO eleccionDAO = new EleccionDAO();
+                if (eleccionDAO.hayEleccionActiva()) {
+                    JOptionPane.showMessageDialog(null, "No se puede crear una nueva elección mientras haya una activa.");
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(null, "Error al verificar el estado de las elecciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
             }
         });
     }
