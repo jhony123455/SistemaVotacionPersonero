@@ -133,6 +133,7 @@ public class FrmCrearVotación extends javax.swing.JFrame {
             formularioVotacion = new Votarr(formularioPrincipal, fechaHoraFin);
         }
         formularioVotacion.iniciarProcesoDeMostraryVotacion();
+        formularioVotacion.llenarRadioButtonsConCandidatos();
         formularioVotacion.setVisible(true);
     }
      

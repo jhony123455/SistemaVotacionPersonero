@@ -112,7 +112,7 @@ SELECT COUNT(*) FROM Eleccion WHERE Fecha_Inicio <= NOW() AND Fecha_Fin >= NOW()
 ALTER TABLE Eleccion
 ADD COLUMN Estado VARCHAR(20) DEFAULT 'Activa';
 
-select *from eleccion;
+
 
 DELIMITER //
 
@@ -368,6 +368,48 @@ BEGIN
     SET Estado = 'Finalizada'
     WHERE Fecha_Fin < NOW() AND Estado = 'Activa';
 END//
+
+CREATE EVENT update_candidatoporeleccion
+ON SCHEDULE EVERY 1 MINUTE
+DO
+BEGIN
+    DECLARE finished_election_id INT;
+
+    DECLARE election_cursor CURSOR FOR 
+    SELECT Id_Eleccion
+    FROM Eleccion
+    WHERE Fecha_Fin < NOW() AND Estado = 'Finalizada';
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished_election_id = NULL;
+
+    OPEN election_cursor;
+
+    election_loop: LOOP
+        FETCH election_cursor INTO finished_election_id;
+        IF finished_election_id IS NULL THEN
+            LEAVE election_loop;
+        END IF;
+        
+        INSERT INTO candidatoporeleccion (idCandidato, idEleccion)
+        SELECT c.Id_Candidato, finished_election_id
+        FROM Candidato c
+        JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante
+        WHERE c.activo = TRUE;
+
+      
+        UPDATE Eleccion
+        SET Estado = 'Procesada'
+        WHERE Id_Eleccion = finished_election_id;
+    END LOOP;
+
+    CLOSE election_cursor;
+END//
+
+
+SELECT * FROM candidatoporeleccion//
+
+show events //
+
 
 
 

@@ -114,7 +114,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         if (usuarioActual != null) {
             int idRol = usuarioActual.getIdRol();
             if(idRol==2){
-                btnFiltrar.setEnabled(false);
+                btnRegistrarEstudiantes.setEnabled(false);
             }
         } else {
             
@@ -328,16 +328,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }
 
     
-    private void actualizarDespuesDeBorrado() {
-       
-        actualizarEstado();
-        
-        
-        if (registroCandidatos != null) {
-            registroCandidatos.actualizarDespuesDeBorrado();
-            
-        }
-    }
+   
     
   private void cerrarSesion() {
         int opcion = JOptionPane.showConfirmDialog(this,

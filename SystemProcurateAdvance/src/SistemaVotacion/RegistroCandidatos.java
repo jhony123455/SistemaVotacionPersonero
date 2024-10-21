@@ -15,8 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+
 
 /**
  *
@@ -43,7 +42,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         TxtCandidato2.setText("");
         TxtCandidato3.setText("");
         llenarEstudiante();
-        BtEliminarCandidatos.setVisible(true);
+        BtEliminarCandidatos.setEnabled(false);
         actualizarInterfazCandidatos();
                 
    
@@ -79,6 +78,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         try {
             List<Candidatos> candidatosRegistrados = candidatosdao.obtenerCandidatosActivos();
             if (candidatosRegistrados.size() >= 3) {
+                BtEliminarCandidatos.setEnabled(true);
                 JOptionPane.showMessageDialog(this, "Ya se han registrado 3 candidatos activos. No se pueden agregar más.");
                 return false;
             }
@@ -108,9 +108,12 @@ public class RegistroCandidatos extends javax.swing.JFrame {
 
             Candidatos nuevoCandidato = new Candidatos(1, estudiante, propuesta);
             boolean registroExitoso = candidatosdao.agregarCandidato(nuevoCandidato);
+            
             if (registroExitoso) {
                 actualizarInterfazCandidatos();
+                
                 return true;
+                
             } else {
                 JOptionPane.showMessageDialog(this, "Error al registrar el candidato en la base de datos.");
                 return false;

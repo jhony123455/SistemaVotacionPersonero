@@ -67,6 +67,7 @@ public class Votarr extends javax.swing.JFrame {
 
     public Votarr(FrmPrincipal principal, LocalDateTime fechaFinalizacion) {
         initComponents();
+       
         this.formularioPrincipal = principal;
         this.fechaFinalizacion = fechaFinalizacion;
         Reloj reloj = new Reloj(lbreloj);
@@ -251,6 +252,7 @@ public class Votarr extends javax.swing.JFrame {
     }
 
     private void guardarVoto() {
+      
         try {
             Eleccion eleccionActual = elecciondao.obtenerEleccionActual();
             if (eleccionActual == null) {
@@ -268,7 +270,7 @@ public class Votarr extends javax.swing.JFrame {
                 return;
             }
 
-            // Obtener candidatos activos
+           
             List<Candidatos> candidatosActivos = candidatoDAO.obtenerCandidatosActivos();
             if (candidatosActivos.size() < 3) {
                 JOptionPane.showMessageDialog(this, "Se requieren al menos 3 candidatos activos para votar.");
@@ -310,7 +312,7 @@ public class Votarr extends javax.swing.JFrame {
         CbEstudiante.setSelectedIndex(0);
     }
 
-    private void llenarRadioButtonsConCandidatos() {
+    public void llenarRadioButtonsConCandidatos() {
         Candidato.clearSelection(); 
         RbC1.setText("");
         RbC2.setText("");

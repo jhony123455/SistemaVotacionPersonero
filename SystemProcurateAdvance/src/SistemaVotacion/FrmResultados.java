@@ -48,7 +48,28 @@ public class FrmResultados extends javax.swing.JFrame {
         CbGrados.setVisible(false);
     
        actualizarEstadoBotonResultados(); 
+       configurarInterfazUsuario();
         
+    }
+    
+    private void configurarInterfazUsuario() {
+        if (Sesion.haySesionActiva()) {
+            verificarPrivilegios();
+        } else {
+            JOptionPane.showMessageDialog(this, "Error: No se ha iniciado sesión correctamente");
+            this.dispose();
+        }
+    }
+
+    private void verificarPrivilegios() {
+        if (Sesion.usuarioActual != null) {
+            if (!Sesion.esAdmin()) {
+                BtPorGrado.setEnabled(false);
+                BtGeneral.setEnabled(false);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Error: Usuario no inicializado");
+        }
     }
     private void llenarComboGrados() {
         CbGrados.removeAllItems();
