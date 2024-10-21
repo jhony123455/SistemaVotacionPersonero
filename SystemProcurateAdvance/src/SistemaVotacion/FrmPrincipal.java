@@ -8,6 +8,7 @@ package SistemaVotacion;
 import SistemaVotacion.ConexionBD.DAO.CandidatosDAO;
 import SistemaVotacion.ConexionBD.DAO.EleccionDAO;
 import SistemaVotacion.ConexionBD.DAO.EstudiantesDAO;
+import SistemaVotacion.ConexionBD.DAO.UsuarioDAO;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Image;
@@ -21,10 +22,12 @@ import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJThe
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatGitHubIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatGradiantoDarkFuchsiaIJTheme;
+import com.sun.java.swing.ui.OkCancelButtonPanel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -56,6 +59,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private FrmLogin login;
     private FrmResultados resultados;
     private Votarr vota;
+    private UsuarioDAO usuariodao;
           
 
     public FrmPrincipal(Usuario user) {
@@ -73,6 +77,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
        
         estudiantesdao = new EstudiantesDAO();
         candidatosdao= new CandidatosDAO();
+        usuariodao= new UsuarioDAO();
         actualizarEstado();
         registrarTemas();
         crearBotonCambiarTema();
@@ -115,6 +120,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             int idRol = usuarioActual.getIdRol();
             if(idRol==2){
                 btnRegistrarEstudiantes.setEnabled(false);
+                Btdeshabilitar.setVisible(false);
             }
         } else {
             
@@ -341,6 +347,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
             login = new FrmLogin();
             
             login.setVisible(true);
+        }else{
+            JOptionPane.showMessageDialog(this, "Operacion Cancelada", "Cancelado", JOptionPane.CANCEL_OPTION);
         }
     }
   
@@ -373,6 +381,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         btnResultados = new javax.swing.JButton();
         BtCerrar = new javax.swing.JButton();
         BtTheme = new javax.swing.JButton();
+        Btdeshabilitar = new javax.swing.JButton();
         header = new javax.swing.JPanel();
         lbTitulo = new javax.swing.JLabel();
         content = new javax.swing.JPanel();
@@ -489,6 +498,13 @@ public class FrmPrincipal extends javax.swing.JFrame {
         BtTheme.setText("Cambiar el tema");
         BtTheme.setBorder(null);
 
+        Btdeshabilitar.setText("Deshabilitar Usuarios");
+        Btdeshabilitar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtdeshabilitarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout menuLayout = new javax.swing.GroupLayout(menu);
         menu.setLayout(menuLayout);
         menuLayout.setHorizontalGroup(
@@ -496,6 +512,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             .addComponent(BtTheme, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(menuLayout.createSequentialGroup()
                 .addGroup(menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(Btdeshabilitar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
                         .addGap(115, 115, 115)
                         .addComponent(lbMenu))
@@ -536,7 +553,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 .addComponent(BtTheme, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(BtCerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(187, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Btdeshabilitar, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(130, Short.MAX_VALUE))
         );
 
         header.setBackground(new java.awt.Color(25, 118, 210));
@@ -641,6 +660,35 @@ public class FrmPrincipal extends javax.swing.JFrame {
         mostrarResultados();
     }//GEN-LAST:event_btnResultadosActionPerformed
 
+    private void BtdeshabilitarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtdeshabilitarActionPerformed
+        // TODO add your handling code here:
+        List<Usuario> usuariosRol2 = usuariodao.obtenerUsuariosRol2();
+        if (usuariosRol2.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay usuarios con rol 2 disponibles para desactivar.");
+            return;
+        }
+
+        String[] nombresUsuarios = usuariosRol2.stream().map(Usuario::getUser).toArray(String[]::new);
+        String usuarioSeleccionado = (String) JOptionPane.showInputDialog(
+                this,
+                "Seleccione un usuario para desactivar:",
+                "Desactivar Usuario",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                nombresUsuarios,
+                nombresUsuarios[0]
+        );
+
+        if (usuarioSeleccionado != null) {
+            boolean resultado = usuariodao.desactivarUsuario(usuarioSeleccionado);
+            if (resultado) {
+                JOptionPane.showMessageDialog(this, "Usuario desactivado exitosamente.");
+            } else {
+                JOptionPane.showMessageDialog(this, "No se pudo desactivar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_BtdeshabilitarActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -672,6 +720,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtCerrar;
     private javax.swing.JButton BtTheme;
+    private javax.swing.JButton Btdeshabilitar;
     private javax.swing.JPanel background;
     private javax.swing.JButton btnFiltrar;
     private javax.swing.JButton btnRegistrarCandidatos;

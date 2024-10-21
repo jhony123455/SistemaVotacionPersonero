@@ -344,18 +344,6 @@ DELETE FROM Eleccion;//
 
 
 
-/*CREATE TRIGGER actualizar_estado_eleccion
-AFTER UPDATE ON Eleccion
-FOR EACH ROW
-BEGIN
-    IF NEW.Fecha_Fin < NOW() THEN
-        UPDATE Eleccion
-        SET Estado = 'Finalizada'
-        WHERE Id_Eleccion = NEW.Id_Eleccion;
-    END IF;
-END //*/
-
-
 
 SET GLOBAL event_scheduler = ON;
 
@@ -389,14 +377,18 @@ BEGIN
         IF finished_election_id IS NULL THEN
             LEAVE election_loop;
         END IF;
-        
-        INSERT INTO candidatoporeleccion (idCandidato, idEleccion)
-        SELECT c.Id_Candidato, finished_election_id
-        FROM Candidato c
-        JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante
-        WHERE c.activo = TRUE;
 
-      
+        INSERT INTO candidatoporeleccion (idCandidato, idEleccion)
+        SELECT c.Id_Candidato, e.Id_Eleccion
+        FROM Candidato c
+        INNER JOIN Eleccion e ON e.Id_Eleccion = finished_election_id
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM candidatoporeleccion ce 
+            WHERE ce.idCandidato = c.Id_Candidato 
+            AND ce.idEleccion = finished_election_id
+        );
+
         UPDATE Eleccion
         SET Estado = 'Procesada'
         WHERE Id_Eleccion = finished_election_id;
@@ -404,6 +396,7 @@ BEGIN
 
     CLOSE election_cursor;
 END//
+
 
 
 SELECT * FROM candidatoporeleccion//

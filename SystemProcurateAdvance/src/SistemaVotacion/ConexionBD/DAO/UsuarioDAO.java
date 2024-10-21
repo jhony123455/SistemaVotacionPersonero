@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import login.Sesion;
 import login.Usuario;
 
@@ -133,6 +135,42 @@ public class UsuarioDAO {
 
         return usuario;
     }
+   
+    public boolean desactivarUsuario(String usuario) {
+        String sql = "UPDATE Usuario SET Estado = FALSE WHERE Nombre_Usuario = ? AND Id_Rol = 2";
+        try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, usuario);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+     
+     public List<Usuario> obtenerUsuariosRol2() {
+        List<Usuario> usuarios = new ArrayList<>();
+        String sql = "SELECT Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado FROM Usuario WHERE Id_Rol = 2";
+        try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Usuario usuario = new Usuario(
+                        rs.getInt("Id_Usuario"),
+                        rs.getString("Nombre_Usuario"),
+                        rs.getString("Contrasena"),
+                        rs.getInt("Id_Rol"),
+                        rs.getBoolean("Estado")
+                );
+                usuarios.add(usuario);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return usuarios;
+    }
+
+
 
 
   
