@@ -15,14 +15,15 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLaf;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatVuesionIJTheme;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMoonlightIJTheme;
-import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatGitHubIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatGitHubDarkIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme;
-import com.formdev.flatlaf.intellijthemes.FlatGradiantoDarkFuchsiaIJTheme;
-import com.sun.java.swing.ui.OkCancelButtonPanel;
+import com.formdev.flatlaf.intellijthemes.FlatGradiantoDeepOceanIJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatCobalt2IJTheme;
+import com.formdev.flatlaf.intellijthemes.FlatGradiantoMidnightBlueIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
@@ -88,6 +89,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 cerrarSesion();
+                setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
             }
         });
 
@@ -168,6 +170,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         btnResultados.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         BtTheme.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         BtCerrar.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+        Btdeshabilitar.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
 
     }
 
@@ -213,7 +216,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         }
 
         btnVotacion.setEnabled(hayEstudiantesEnCadaGrado && candidatosRegistrados >= 3);
-        /*btnEliminarCandidatos.setEnabled(candidatosRegistrados > 0);*/
+   
         
         System.out.println("Candidatos registrados: " + candidatosRegistrados);
         System.out.println("Botón de votación habilitado: " + btnVotacion.isEnabled());
@@ -274,13 +277,15 @@ public class FrmPrincipal extends javax.swing.JFrame {
     
     private void registrarTemas() {
         temasDisponibles = new LinkedHashMap<>();
-        temasDisponibles.put("Light", new FlatLightLaf());
+        temasDisponibles.put("Deep Ocean", new FlatGradiantoDeepOceanIJTheme());
         temasDisponibles.put("Dark", new FlatDarkLaf());
-        temasDisponibles.put("IntelliJ", new FlatIntelliJLaf());
+        temasDisponibles.put("FlatVuesion", new FlatVuesionIJTheme());
         temasDisponibles.put("Flat Moonlight", new FlatMoonlightIJTheme());
-        temasDisponibles.put("GitHubTheme", new FlatGitHubIJTheme());
-        temasDisponibles.put("purpura", new FlatDarkPurpleIJTheme());
-        temasDisponibles.put("GradiantoFucshia", new FlatGradiantoDarkFuchsiaIJTheme());
+        temasDisponibles.put("GitHub Theme", new FlatGitHubDarkIJTheme());
+        temasDisponibles.put("Purpura", new FlatDarkPurpleIJTheme());
+        temasDisponibles.put("MidNightBule", new FlatGradiantoMidnightBlueIJTheme());
+        temasDisponibles.put("Cobalto", new FlatCobalt2IJTheme());
+        temasDisponibles.put("OwlDark", new FlatNightOwlIJTheme());
     }
     
     private void crearBotonCambiarTema() {
@@ -347,8 +352,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
             login = new FrmLogin();
             
             login.setVisible(true);
-        }else{
+        }else if (opcion == JOptionPane.NO_OPTION){
             JOptionPane.showMessageDialog(this, "Operacion Cancelada", "Cancelado", JOptionPane.CANCEL_OPTION);
+            this.setVisible(true);
         }
     }
   
@@ -382,6 +388,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         BtCerrar = new javax.swing.JButton();
         BtTheme = new javax.swing.JButton();
         Btdeshabilitar = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
         header = new javax.swing.JPanel();
         lbTitulo = new javax.swing.JLabel();
         content = new javax.swing.JPanel();
@@ -488,6 +495,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
         BtCerrar.setText("Cerrar Sesion");
         BtCerrar.setBorder(null);
         BtCerrar.setBorderPainted(false);
+        BtCerrar.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        BtCerrar.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        BtCerrar.setIconTextGap(16);
         BtCerrar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtCerrarActionPerformed(evt);
@@ -497,35 +507,51 @@ public class FrmPrincipal extends javax.swing.JFrame {
         BtTheme.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/paleta-de-color.png"))); // NOI18N
         BtTheme.setText("Cambiar el tema");
         BtTheme.setBorder(null);
+        BtTheme.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        BtTheme.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        BtTheme.setIconTextGap(10);
 
+        Btdeshabilitar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/bloquear-usuario.png"))); // NOI18N
         Btdeshabilitar.setText("Deshabilitar Usuarios");
+        Btdeshabilitar.setBorder(null);
+        Btdeshabilitar.setBorderPainted(false);
+        Btdeshabilitar.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        Btdeshabilitar.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        Btdeshabilitar.setIconTextGap(10);
         Btdeshabilitar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtdeshabilitarActionPerformed(evt);
             }
         });
 
+        jSeparator2.setBackground(new java.awt.Color(255, 255, 255));
+        jSeparator2.setForeground(new java.awt.Color(255, 255, 255));
+
         javax.swing.GroupLayout menuLayout = new javax.swing.GroupLayout(menu);
         menu.setLayout(menuLayout);
         menuLayout.setHorizontalGroup(
             menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(BtTheme, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(menuLayout.createSequentialGroup()
-                .addGroup(menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(Btdeshabilitar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
+            .addComponent(BtTheme, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, menuLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(menuLayout.createSequentialGroup()
                         .addGap(115, 115, 115)
                         .addComponent(lbMenu))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, menuLayout.createSequentialGroup()
+                    .addGroup(menuLayout.createSequentialGroup()
                         .addGap(50, 50, 50)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(btnRegistrarEstudiantes, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                    .addComponent(btnResultados, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                    .addComponent(btnVotacion, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                    .addComponent(btnFiltrar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                    .addComponent(btnRegistrarCandidatos, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
-                    .addComponent(BtCerrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btnRegistrarEstudiantes, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnResultados, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnVotacion, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnFiltrar, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(btnRegistrarCandidatos, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                    .addComponent(BtCerrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Btdeshabilitar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(menuLayout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         menuLayout.setVerticalGroup(
             menuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -549,13 +575,15 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     .addGroup(menuLayout.createSequentialGroup()
                         .addGap(50, 50, 50)
                         .addComponent(btnRegistrarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(11, 11, 11)
                 .addComponent(BtTheme, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(BtCerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(Btdeshabilitar, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
 
         header.setBackground(new java.awt.Color(25, 118, 210));
@@ -586,11 +614,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
         content.setLayout(contentLayout);
         contentLayout.setHorizontalGroup(
             contentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 970, Short.MAX_VALUE)
+            .addGap(0, 1428, Short.MAX_VALUE)
         );
         contentLayout.setVerticalGroup(
             contentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 527, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout backgroundLayout = new javax.swing.GroupLayout(background);
@@ -694,7 +722,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
          try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(new FlatMoonlightIJTheme());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -730,6 +758,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private javax.swing.JPanel content;
     private javax.swing.JPanel header;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel lbMenu;
     private javax.swing.JLabel lbTitulo;
     private javax.swing.JPanel menu;

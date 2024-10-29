@@ -44,7 +44,7 @@ public class ResultadoDAO {
                 Candidatos candidato;
 
                 if (idCandidato == 0) {
-                    // Caso especial para votos nulos
+                   
                     estudiante = new Estudiantes(0, "Voto en Blanco", "", "");
                     candidato = new Candidatos(0, estudiante, "");
                 } else {
@@ -83,7 +83,7 @@ public class ResultadoDAO {
                 Candidatos candidato;
 
                 if (idCandidato == 0) {
-                    // Caso especial para votos nulos
+                   
                     estudiante = new Estudiantes(0, "Voto en Blanco", "", "");
                     candidato = new Candidatos(0, estudiante, "");
                 } else {

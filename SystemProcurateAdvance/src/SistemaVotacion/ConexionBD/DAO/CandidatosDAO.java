@@ -78,7 +78,7 @@ public class CandidatosDAO {
         String documento = rs.getString("Documento");
         String nombreGrado = rs.getString("NombreGrado");
 
-        Grados grado = new Grados(0, nombreGrado);  // El ID del grado no es necesario aquí
+        Grados grado = new Grados(0, nombreGrado);  
         Estudiantes estudiante = new Estudiantes(idEstudiante, nombre, documento, apellido);
         estudiante.AsignarGrado(grado);
 
@@ -115,7 +115,7 @@ public class CandidatosDAO {
 }
     public List<Candidatos> obtenerCandidatosActivos() throws SQLException {
         List<Candidatos> candidatos = new ArrayList<>();
-        String sql = "SELECT c.*, e.Nombre AS nombre, e.Apellido AS apellido, e.Documento AS documento, e.Id_Estudiante AS idEstudiante FROM Candidato c JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante WHERE c.activo = TRUE";
+        String sql = "CALL obtenerCandidatosActivos()";
         try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -133,7 +133,7 @@ public class CandidatosDAO {
     
     
     public boolean desactivarTodosLosCandidatos() throws SQLException {
-        String sql = "UPDATE Candidato SET activo = FALSE WHERE activo = TRUE";
+        String sql = "call desactivarTodosLosCandidatos()";
         try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             int rowsUpdated = ps.executeUpdate();
             return rowsUpdated > 0;

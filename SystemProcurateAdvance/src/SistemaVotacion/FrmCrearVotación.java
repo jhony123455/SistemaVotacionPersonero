@@ -5,6 +5,7 @@
 package SistemaVotacion;
 
 import SistemaVotacion.ConexionBD.DAO.EleccionDAO;
+import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.intellijthemes.FlatXcodeDarkIJTheme;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -36,14 +37,57 @@ public class FrmCrearVotación extends javax.swing.JFrame {
         SetEleccion();
         elecciondao = new EleccionDAO();
         this.formularioPrincipal = principal;
+        estilos();
 
     }
     public void setFormularioPrincipal(FrmPrincipal formularioPrincipal) {
         this.formularioPrincipal = formularioPrincipal;
     }
     
-    public void estilos(){
+    public void estilos() {
+       
+        String labelStyle = ""
+                + "font: 14 'Segoe UI';"
+                + "foreground: #B0B0B0";
+
+        jLabel1.putClientProperty(FlatClientProperties.STYLE, labelStyle);
+        jLabel2.putClientProperty(FlatClientProperties.STYLE, labelStyle);
+
         
+        String dateTimeStyle = ""
+                + "background: #2C3E50;"
+                + "foreground: #FFFFFF;"
+          
+                + "arc: 5";
+
+        DatePicker1.putClientProperty(FlatClientProperties.STYLE, dateTimeStyle);
+        TimePicker.putClientProperty(FlatClientProperties.STYLE, dateTimeStyle);
+        TimePickerFin.putClientProperty(FlatClientProperties.STYLE, dateTimeStyle);
+
+        // Estilo para los botones de vista
+        String viewButtonStyle = ""
+                + "background: #34495E;"
+                + "foreground: #8395A7;"
+                + "focusedBackground: darken(#34495E,10%);"
+                + "hoverBackground: darken(#34495E,5%);"
+                + "pressedBackground: darken(#34495E,15%);"
+                + "font: bold 12 'Segoe UI';"
+              
+                + "arc: 8";
+
+        Bt24.putClientProperty(FlatClientProperties.STYLE, viewButtonStyle);
+        Bt12.putClientProperty(FlatClientProperties.STYLE, viewButtonStyle);
+
+        // Estilo para el botón principal
+        BtnVotacion.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #3498DB;"
+                + "foreground: #FFFFFF;"
+                + "focusedBackground: darken(#3498DB,10%);"
+                + "hoverBackground: darken(#3498DB,5%);"
+                + "pressedBackground: darken(#3498DB,15%);"
+                + "font: bold 14 'Segoe UI';"
+              
+                + "arc: 10");
     }
 
     private void SetEleccion() {
@@ -203,6 +247,7 @@ public class FrmCrearVotación extends javax.swing.JFrame {
         FormatHourFin = new javax.swing.JFormattedTextField();
         Bt24 = new javax.swing.JButton();
         Bt12 = new javax.swing.JButton();
+        BtHelp = new SistemaVotacion.MyButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -231,6 +276,14 @@ public class FrmCrearVotación extends javax.swing.JFrame {
             }
         });
 
+        BtHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/signo-de-interrogacion.png"))); // NOI18N
+        BtHelp.setRadius(500);
+        BtHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtHelpActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PanelVotacionLayout = new javax.swing.GroupLayout(PanelVotacion);
         PanelVotacion.setLayout(PanelVotacionLayout);
         PanelVotacionLayout.setHorizontalGroup(
@@ -241,7 +294,7 @@ public class FrmCrearVotación extends javax.swing.JFrame {
                         .addGap(38, 38, 38)
                         .addGroup(PanelVotacionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(PanelVotacionLayout.createSequentialGroup()
-                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 186, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(FormatDay, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(PanelVotacionLayout.createSequentialGroup()
@@ -258,11 +311,17 @@ public class FrmCrearVotación extends javax.swing.JFrame {
                         .addGap(245, 245, 245)
                         .addComponent(BtnVotacion, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(105, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelVotacionLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16))
         );
         PanelVotacionLayout.setVerticalGroup(
             PanelVotacionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelVotacionLayout.createSequentialGroup()
-                .addGap(89, 89, 89)
+                .addContainerGap()
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(43, 43, 43)
                 .addGroup(PanelVotacionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(FormatDay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -322,6 +381,11 @@ public class FrmCrearVotación extends javax.swing.JFrame {
         TimePickerFin.set24HourView(false);
     }//GEN-LAST:event_Bt12ActionPerformed
 
+    private void BtHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtHelpActionPerformed
+        // TODO add your handling code here:
+        Tutorial.getInstance().mostrarTutorial(this, "FrmCrearVotacion");
+    }//GEN-LAST:event_BtHelpActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -338,6 +402,7 @@ public class FrmCrearVotación extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Bt12;
     private javax.swing.JButton Bt24;
+    private SistemaVotacion.MyButton BtHelp;
     private javax.swing.JButton BtnVotacion;
     private raven.datetime.component.date.DatePicker DatePicker1;
     private javax.swing.JFormattedTextField FormatDay;

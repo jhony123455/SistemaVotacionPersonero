@@ -140,15 +140,14 @@ public class FrmRegistrarse extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
-        if(!txtRegistrarUser.getText().isEmpty() && !pfRegistrarPass.getText().isEmpty() && !pfConfirmarPass.getText().isEmpty() && pfConfirmarPass.getText().equals(pfRegistrarPass.getText())){
-            Usuario usuario = new Usuario(txtRegistrarUser.getText(),pfRegistrarPass.getText());
-            
-            if(UsuarioLogic.insertar(usuario)){
+        if (!txtRegistrarUser.getText().isEmpty() && !pfRegistrarPass.getText().isEmpty() && !pfConfirmarPass.getText().isEmpty() && pfConfirmarPass.getText().equals(pfRegistrarPass.getText())) {
+            Usuario usuario = new Usuario(txtRegistrarUser.getText(), pfRegistrarPass.getText());
+            if (UsuarioLogic.insertar(usuario)) {
                 JOptionPane.showMessageDialog(rootPane, "Usuario registrado exitosamente");
-            }else{
-                JOptionPane.showMessageDialog(rootPane, "Este usuario ya existe");
+            } else {
+                JOptionPane.showMessageDialog(rootPane, "Este usuario ya existe o error en el registro");
             }
-        }else{
+        } else {
             JOptionPane.showMessageDialog(rootPane, "Todos los campos deben estar llenos");
         }
     }//GEN-LAST:event_btnRegistrarActionPerformed

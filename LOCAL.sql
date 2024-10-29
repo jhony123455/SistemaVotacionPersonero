@@ -170,6 +170,15 @@ BEGIN
     SELECT * FROM Estudiante WHERE Documento = p_documento;
 END //
 
+CREATE PROCEDURE obtenerTodosLosEstudiantes()
+BEGIN
+    SELECT * FROM Estudiante;
+END//
+
+CREATE PROCEDURE obtenerTodosLosGrados()
+BEGIN
+   SELECT * FROM Grado;
+END//
 CREATE PROCEDURE obtenerEstudiantesPorGrado (
     IN p_nombreGrado VARCHAR(50)
 )
@@ -208,44 +217,69 @@ BEGIN
       SELECT COUNT(*) FROM Candidato WHERE activo = TRUE;
 END //
 
-CREATE PROCEDURE borrarCandidatos()
+CREATE PROCEDURE obtenerCandidatosActivos()
 BEGIN
-    DELETE FROM Candidato;
-END //
-
-CREATE PROCEDURE insertarEleccion(IN fecha_inicio DATETIME, IN fecha_fin DATETIME)
-BEGIN
-  DECLARE active_elections INT;
-    SELECT COUNT(*) INTO active_elections
-    FROM Eleccion
-    WHERE Fecha_Inicio <= NOW() AND Fecha_Fin >= NOW() AND Estado = 'Activa';
-    
-    IF active_elections > 0 THEN
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'No se puede crear una nueva elección mientras haya una activa';
-    ELSE
-        INSERT INTO Eleccion (Fecha_Inicio, Fecha_Fin, Estado) 
-        VALUES (fecha_inicio, fecha_fin, 'Activa');
-    END IF;
+    SELECT c.*, e.Nombre AS nombre, e.Apellido AS apellido, e.Documento AS documento, e.Id_Estudiante AS idEstudiante
+    FROM Candidato c
+    JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante
+    WHERE c.activo = TRUE;
 END//
 
-CREATE PROCEDURE guardarEleccion(IN p_fechaInicio DATETIME, IN p_fechaFin DATETIME)
+CREATE PROCEDURE desactivarTodosLosCandidatos()
 BEGIN
-    INSERT INTO Eleccion (Fecha_Inicio, Fecha_Fin) VALUES (p_fechaInicio, p_fechaFin);
-END //
+    UPDATE Candidato SET activo = FALSE WHERE activo = TRUE;
+END//
 
-CREATE PROCEDURE obtenerEleccionActual(IN p_now DATETIME)
+CREATE PROCEDURE guardarEleccion(IN fechaInicio TIMESTAMP, IN fechaFin TIMESTAMP)
 BEGIN
-    SELECT * FROM Eleccion 
-    WHERE Fecha_Inicio <= p_now AND Fecha_Fin >= p_now 
-    ORDER BY Fecha_Fin DESC LIMIT 1;
-END //
+    INSERT INTO Eleccion (fecha_Inicio, fecha_Fin, Estado) VALUES (fechaInicio, fechaFin, 'Activa');
+END//
 
-CREATE PROCEDURE hayEleccionActiva(IN p_now DATETIME)
+
+CREATE PROCEDURE insertarEleccion(IN fechaInicio TIMESTAMP, IN fechaFin TIMESTAMP)
 BEGIN
-    SELECT COUNT(*) FROM Eleccion 
-    WHERE Fecha_Inicio <= p_now AND Fecha_Fin >= p_now AND Estado = 'Activa';
-END //
+    INSERT INTO Eleccion (fecha_Inicio, fecha_Fin, Estado) VALUES (fechaInicio, fechaFin, 'Activa');
+END//
+
+CREATE PROCEDURE obtenerTiempoFinalizacion(IN fechaActual TIMESTAMP)
+BEGIN
+    SELECT fecha_Fin FROM Eleccion WHERE fecha_Inicio <= fechaActual AND fecha_Fin > fechaActual ORDER BY fecha_Fin ASC LIMIT 1;
+END//
+
+
+
+CREATE PROCEDURE obtenerEleccionActual(IN fechaActual TIMESTAMP)
+BEGIN
+    SELECT Id_Eleccion, fecha_Inicio, fecha_Fin FROM Eleccion 
+    WHERE fecha_Inicio <= fechaActual AND fecha_Fin > fechaActual AND Estado = 'Activa'
+    ORDER BY fecha_Fin ASC LIMIT 1;
+END//
+
+
+CREATE PROCEDURE hayEleccionActiva(IN fechaActual TIMESTAMP, OUT activo BOOLEAN)
+BEGIN
+    SELECT COUNT(*) INTO activo FROM Eleccion 
+    WHERE fecha_Inicio <= fechaActual AND fecha_Fin > fechaActual AND Estado = 'Activa';
+END//
+
+CREATE PROCEDURE actualizarEstadoEleccion(IN idEleccion INT, IN nuevoEstado VARCHAR(20))
+BEGIN
+    UPDATE Eleccion SET Estado = nuevoEstado WHERE Id_Eleccion = idEleccion;
+END//
+
+CREATE PROCEDURE contarVotosRegistrados()
+BEGIN
+    SELECT COUNT(*) FROM Voto;
+END//
+
+CREATE PROCEDURE verificarEleccionFinalizada()
+BEGIN
+    SELECT Estado FROM Eleccion WHERE Estado = 'Finalizada';
+END//
+
+
+
+
 
 CREATE PROCEDURE guardarVoto(IN p_fkEleccion INT, IN p_fkCandidato INT, IN p_fkEstudiante INT)
 BEGIN
@@ -405,6 +439,301 @@ show events //
 
 
 
+CREATE FUNCTION insertarUsuario(
+    nombreUsuario VARCHAR(255),
+    contrasena VARCHAR(255)
+)
+RETURNS BOOLEAN
 
+BEGIN
+    DECLARE resultado BOOLEAN;
+
+
+    IF (SELECT COUNT(*) FROM Usuario WHERE Nombre_Usuario = nombreUsuario) > 0 THEN
+        SET resultado = FALSE;
+    ELSE
+   
+        INSERT INTO Usuario (Nombre_Usuario, Contrasena, Id_Rol, Estado)
+        VALUES (nombreUsuario, contrasena, 2, 1);
+        SET resultado = (ROW_COUNT() > 0);
+    END IF;
+
+    RETURN resultado;
+END //
+
+
+
+CREATE PROCEDURE registrarUsuario(
+    IN nombreUsuario VARCHAR(255),
+    IN contrasena VARCHAR(255)
+)
+BEGIN
+    DECLARE exito BOOLEAN;
+
+    SET exito = insertarUsuario(nombreUsuario, contrasena);
+
+    IF exito THEN
+        SELECT 'Usuario registrado exitosamente' AS Mensaje;
+    ELSE
+        SELECT 'El usuario ya existe o error en el registro' AS Mensaje;
+    END IF;
+END //
+
+
+
+
+CREATE FUNCTION desactivarUsuario(
+    nombreUsuario VARCHAR(255)
+)
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    DECLARE resultado BOOLEAN;
+
+    UPDATE Usuario
+    SET Estado = FALSE
+    WHERE Nombre_Usuario = nombreUsuario AND Id_Rol = 2;
+
+    SET resultado = (ROW_COUNT() > 0);
+    
+    RETURN resultado;
+END //
+
+CREATE PROCEDURE desactivarUsuarioProc(
+    IN nombreUsuario VARCHAR(255)
+)
+BEGIN
+    DECLARE exito BOOLEAN;
+
+    SET exito = desactivarUsuario(nombreUsuario);
+
+    IF exito THEN
+        SELECT 'Usuario desactivado exitosamente' AS Mensaje;
+    ELSE
+        SELECT 'Error al desactivar el usuario o el usuario no existe' AS Mensaje;
+    END IF;
+END //
+
+CREATE PROCEDURE iniciarSesion(
+    IN nombreUsuario VARCHAR(50),
+    IN contrasena VARCHAR(50)
+)
+BEGIN
+    SELECT Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado
+    FROM Usuario
+    WHERE Nombre_Usuario = nombreUsuario AND Contrasena = contrasena;
+END//
+
+CREATE PROCEDURE autenticarUsuario(
+    IN nombreUsuario VARCHAR(50),
+    IN contrasena VARCHAR(50)
+)
+BEGIN
+    SELECT Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado
+    FROM Usuario
+    WHERE Nombre_Usuario = nombreUsuario;
+END//
+
+CREATE PROCEDURE obtenerUsuariosRol2()
+BEGIN
+    SELECT Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado
+    FROM Usuario
+    WHERE Id_Rol = 2;
+END//
+
+CREATE PROCEDURE existeUsuario(
+    IN nombreUsuario VARCHAR(50),
+    OUT existe BOOLEAN
+)
+BEGIN
+    DECLARE count INT;
+    SELECT COUNT(*) INTO count FROM Usuario WHERE Nombre_Usuario = nombreUsuario;
+    SET existe = count > 0;
+END//
+
+-- aparir de aqui vienen los triggers con tablas
+
+
+
+CREATE TABLE Estudiante_backup (
+    Id_Backup INT PRIMARY KEY AUTO_INCREMENT,
+    Id_Estudiante INT,
+    Nombre VARCHAR(20),
+    Apellido VARCHAR(20),
+    Documento VARCHAR(10),
+    FkGrado INT,
+    Operacion VARCHAR(20),
+    Usuario VARCHAR(50),
+    Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+CREATE TRIGGER tr_estudiante_insert 
+AFTER INSERT ON Estudiante
+FOR EACH ROW
+BEGIN
+    INSERT INTO Estudiante_backup (Id_Estudiante, Nombre, Apellido, Documento, FkGrado, Operacion, Usuario)
+    VALUES (NEW.Id_Estudiante, NEW.Nombre, NEW.Apellido, NEW.Documento, NEW.FkGrado, 'INSERT', USER());
+END//
+
+CREATE TRIGGER tr_estudiante_update 
+AFTER UPDATE ON Estudiante
+FOR EACH ROW
+BEGIN
+    INSERT INTO Estudiante_backup (Id_Estudiante, Nombre, Apellido, Documento, FkGrado, Operacion, Usuario)
+    VALUES (OLD.Id_Estudiante, NEW.Nombre, NEW.Apellido, NEW.Documento, NEW.FkGrado, 'UPDATE', USER());
+END//
+
+CREATE TRIGGER tr_estudiante_delete 
+AFTER DELETE ON Estudiante
+FOR EACH ROW
+BEGIN
+    INSERT INTO Estudiante_backup (Id_Estudiante, Nombre, Apellido, Documento, FkGrado, Operacion, Usuario)
+    VALUES (OLD.Id_Estudiante, OLD.Nombre, OLD.Apellido, OLD.Documento, OLD.FkGrado, 'DELETE', USER());
+END//
+
+
+CREATE TABLE Candidato_backup (
+    Id_Backup INT PRIMARY KEY AUTO_INCREMENT,
+    Id_Candidato INT,
+    FkEstudiante INT,
+    Propuesta TEXT,
+    activo BOOLEAN,
+    Operacion VARCHAR(20),
+    Usuario VARCHAR(50),
+    Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+); //
+
+CREATE TRIGGER tr_candidato_insert 
+AFTER INSERT ON Candidato
+FOR EACH ROW
+BEGIN
+    INSERT INTO Candidato_backup (Id_Candidato, FkEstudiante, Propuesta, activo, Operacion, Usuario)
+    VALUES (NEW.Id_Candidato, NEW.FkEstudiante, NEW.Propuesta, NEW.activo, 'INSERT', USER());
+END//
+
+CREATE TRIGGER tr_candidato_update 
+AFTER UPDATE ON Candidato
+FOR EACH ROW
+BEGIN
+    INSERT INTO Candidato_backup (Id_Candidato, FkEstudiante, Propuesta, activo, Operacion, Usuario)
+    VALUES (OLD.Id_Candidato, NEW.FkEstudiante, NEW.Propuesta, NEW.activo, 'UPDATE', USER());
+END//
+
+CREATE TRIGGER tr_candidato_delete 
+AFTER DELETE ON Candidato
+FOR EACH ROW
+BEGIN
+    INSERT INTO Candidato_backup (Id_Candidato, FkEstudiante, Propuesta, activo, Operacion, Usuario)
+    VALUES (OLD.Id_Candidato, OLD.FkEstudiante, OLD.Propuesta, OLD.activo, 'DELETE', USER());
+END//
+
+CREATE TABLE Eleccion_backup (
+    Id_Backup INT PRIMARY KEY AUTO_INCREMENT,
+    Id_Eleccion INT,
+    Fecha_Inicio DATETIME,
+    Fecha_Fin DATETIME,
+    Estado VARCHAR(20),
+    Operacion VARCHAR(20),
+    Usuario VARCHAR(50),
+    Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);//
+
+CREATE TRIGGER tr_eleccion_insert 
+AFTER INSERT ON Eleccion
+FOR EACH ROW
+BEGIN
+    INSERT INTO Eleccion_backup (Id_Eleccion, Fecha_Inicio, Fecha_Fin, Estado, Operacion, Usuario)
+    VALUES (NEW.Id_Eleccion, NEW.Fecha_Inicio, NEW.Fecha_Fin, NEW.Estado, 'INSERT', USER());
+END//
+
+CREATE TRIGGER tr_eleccion_update 
+AFTER UPDATE ON Eleccion
+FOR EACH ROW
+BEGIN
+    INSERT INTO Eleccion_backup (Id_Eleccion, Fecha_Inicio, Fecha_Fin, Estado, Operacion, Usuario)
+    VALUES (OLD.Id_Eleccion, NEW.Fecha_Inicio, NEW.Fecha_Fin, NEW.Estado, 'UPDATE', USER());
+END//
+
+CREATE TRIGGER tr_eleccion_delete 
+AFTER DELETE ON Eleccion
+FOR EACH ROW
+BEGIN
+    INSERT INTO Eleccion_backup (Id_Eleccion, Fecha_Inicio, Fecha_Fin, Estado, Operacion, Usuario)
+    VALUES (OLD.Id_Eleccion, OLD.Fecha_Inicio, OLD.Fecha_Fin, OLD.Estado, 'DELETE', USER());
+END//
+
+CREATE TABLE Voto_backup (
+    Id_Backup INT PRIMARY KEY AUTO_INCREMENT,
+    Id_Voto INT,
+    FkEstudiante INT,
+    FkCandidato INT,
+    FkEleccion INT,
+    Operacion VARCHAR(20),
+    Usuario VARCHAR(50),
+    Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);//
+
+CREATE TRIGGER tr_voto_insert 
+AFTER INSERT ON Voto
+FOR EACH ROW
+BEGIN
+    INSERT INTO Voto_backup (Id_Voto, FkEstudiante, FkCandidato, FkEleccion, Operacion, Usuario)
+    VALUES (NEW.Id_Voto, NEW.FkEstudiante, NEW.FkCandidato, NEW.FkEleccion, 'INSERT', USER());
+END//
+
+CREATE TRIGGER tr_voto_update 
+AFTER UPDATE ON Voto
+FOR EACH ROW
+BEGIN
+    INSERT INTO Voto_backup (Id_Voto, FkEstudiante, FkCandidato, FkEleccion, Operacion, Usuario)
+    VALUES (OLD.Id_Voto, NEW.FkEstudiante, NEW.FkCandidato, NEW.FkEleccion, 'UPDATE', USER());
+END//
+
+CREATE TRIGGER tr_voto_delete 
+AFTER DELETE ON Voto
+FOR EACH ROW
+BEGIN
+    INSERT INTO Voto_backup (Id_Voto, FkEstudiante, FkCandidato, FkEleccion, Operacion, Usuario)
+    VALUES (OLD.Id_Voto, OLD.FkEstudiante, OLD.FkCandidato, OLD.FkEleccion, 'DELETE', USER());
+END//
+
+CREATE TABLE Usuario_backup (
+    Id_Backup INT PRIMARY KEY AUTO_INCREMENT,
+    Id_Usuario INT,
+    Nombre_Usuario VARCHAR(50),
+    Contrasena VARCHAR(255),
+    Id_Rol INT,
+    Estado TINYINT,
+    Fecha_Creacion TIMESTAMP,
+    Operacion VARCHAR(20),
+    Usuario VARCHAR(50),
+    Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);//
+
+CREATE TRIGGER tr_usuario_insert 
+AFTER INSERT ON Usuario
+FOR EACH ROW
+BEGIN
+    INSERT INTO Usuario_backup (Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado, Fecha_Creacion, Operacion, Usuario)
+    VALUES (NEW.Id_Usuario, NEW.Nombre_Usuario, NEW.Contrasena, NEW.Id_Rol, NEW.Estado, NEW.Fecha_Creacion, 'INSERT', USER());
+END//
+
+CREATE TRIGGER tr_usuario_update 
+AFTER UPDATE ON Usuario
+FOR EACH ROW
+BEGIN
+    INSERT INTO Usuario_backup (Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado, Fecha_Creacion, Operacion, Usuario)
+    VALUES (OLD.Id_Usuario, NEW.Nombre_Usuario, NEW.Contrasena, NEW.Id_Rol, NEW.Estado, NEW.Fecha_Creacion, 'UPDATE', USER());
+END//
+
+CREATE TRIGGER tr_usuario_delete 
+AFTER DELETE ON Usuario
+FOR EACH ROW
+BEGIN
+    INSERT INTO Usuario_backup (Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado, Fecha_Creacion, Operacion, Usuario)
+    VALUES (OLD.Id_Usuario, OLD.Nombre_Usuario, OLD.Contrasena, OLD.Id_Rol, OLD.Estado, OLD.Fecha_Creacion, 'DELETE', USER());
+END//
 
 

@@ -10,6 +10,10 @@ import SistemaVotacion.Modelos.Candidatos;
 import SistemaVotacion.Modelos.Eleccion;
 import SistemaVotacion.Modelos.Grados;
 import SistemaVotacion.Modelos.Resultados;
+import com.formdev.flatlaf.FlatClientProperties;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -19,11 +23,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
@@ -49,6 +56,7 @@ public class FrmResultados extends javax.swing.JFrame {
     
        actualizarEstadoBotonResultados(); 
        configurarInterfazUsuario();
+       estilos();
         
     }
     
@@ -320,6 +328,97 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
       public JPanel getPanel() {
         return PanelResult;
     }
+      
+      
+    public void estilos() {
+        // Estilo para los ComboBox
+        String comboBoxStyle = ""
+                + "background: #34495E;"
+                + "foreground: #FFFFFF;"
+                
+              
+                + "arc: 5";
+
+        CbGrados.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
+        CbElecciones.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
+
+        // Estilo común para todos los botones
+        String buttonStyle = ""
+                + "background: #2C3E50;"
+                + "foreground: #B0B0B0;"
+                + "focusedBackground: darken(#2C3E50,10%);"
+                + "hoverBackground: darken(#2C3E50,5%);"
+                + "pressedBackground: darken(#2C3E50,15%);"
+                + "font: bold 12 'Segoe UI';"
+            
+                + "arc: 8";
+
+        BtCargar.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+        BtTotal.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+        BtPorGrado.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+        BtGeneral.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+
+        // Estilo especial para el botón Exportar
+        BtExportar.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #3498DB;"
+                + "foreground: #FFFFFF;"
+                + "focusedBackground: darken(#3498DB,10%);"
+                + "hoverBackground: darken(#3498DB,5%);"
+                + "pressedBackground: darken(#3498DB,15%);"
+                + "font: bold 12 'Segoe UI';"
+          
+                + "arc: 8");
+
+        
+        PanelResult.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #2C3E50;"
+             
+                + "arc: 5");
+     
+        TableResultados.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #1E2837;" 
+                + "foreground: #FFFFFF;");
+
+
+        TableResultados.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #2C3E50;" 
+                + "foreground: #FFFFFF;"
+                + "font: bold 12 'Segoe UI';"
+                + "separatorColor: #34495E;" 
+                + "hoverBackground: darken(#2C3E50, 5%)");
+
+
+        TableResultados.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value,
+                        isSelected, hasFocus, row, column);
+
+                if (isSelected) {
+                    c.setBackground(new Color(52, 152, 219)); 
+                    c.setForeground(Color.WHITE);
+                } else {
+                    if (row % 2 == 0) {
+                        c.setBackground(new Color(30, 40, 55)); 
+                    } else {
+                        c.setBackground(new Color(35, 45, 60)); 
+                    }
+                    c.setForeground(Color.WHITE);
+                }
+
+                // Bordes de las celdas
+                ((JLabel) c).setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+                return c;
+            }
+        });
+
+
+        TableResultados.setRowHeight(30);
+        TableResultados.setShowGrid(false); 
+        TableResultados.setIntercellSpacing(new Dimension(0, 0));
+    }
 
 
 
@@ -340,6 +439,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         jScrollPane1 = new javax.swing.JScrollPane();
         TableResultados = new javax.swing.JTable();
         BtCargar = new javax.swing.JButton();
+        BtHelp = new SistemaVotacion.MyButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -388,7 +488,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
                 {null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Default", "Default", "Default", "Default"
             }
         ));
         jScrollPane1.setViewportView(TableResultados);
@@ -397,6 +497,14 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         BtCargar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtCargarActionPerformed(evt);
+            }
+        });
+
+        BtHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/signo-de-interrogacion.png"))); // NOI18N
+        BtHelp.setRadius(500);
+        BtHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtHelpActionPerformed(evt);
             }
         });
 
@@ -410,19 +518,22 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
                         .addGap(17, 17, 17)
                         .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(BtGeneral, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(BtPorGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(PanelResultLayout.createSequentialGroup()
+                                .addComponent(BtPorGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(BtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(BtExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(BtExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(PanelResultLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(PanelResultLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(BtCargar, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 159, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(BtCargar, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(18, 18, 18)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(52, Short.MAX_VALUE))
         );
         PanelResultLayout.setVerticalGroup(
             PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -436,17 +547,19 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
                         .addGap(29, 29, 29)
                         .addComponent(BtTotal)
                         .addGap(18, 18, 18)
-                        .addComponent(BtPorGrado)
+                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(BtPorGrado)
+                            .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addComponent(BtGeneral)
                         .addGap(18, 18, 18)
-                        .addComponent(BtExportar)
-                        .addGap(18, 18, 18)
-                        .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(BtExportar))
                     .addGroup(PanelResultLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(38, Short.MAX_VALUE))
+                        .addGap(15, 15, 15)
+                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -541,6 +654,11 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         cargarElecciones();
     }//GEN-LAST:event_BtCargarActionPerformed
 
+    private void BtHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtHelpActionPerformed
+        // TODO add your handling code here:
+        Tutorial.getInstance().mostrarTutorial(this, "FrmResultados");
+    }//GEN-LAST:event_BtHelpActionPerformed
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -577,6 +695,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
     private javax.swing.JButton BtCargar;
     private javax.swing.JButton BtExportar;
     private javax.swing.JButton BtGeneral;
+    private SistemaVotacion.MyButton BtHelp;
     private javax.swing.JButton BtPorGrado;
     private javax.swing.JButton BtTotal;
     private javax.swing.JComboBox<String> CbElecciones;

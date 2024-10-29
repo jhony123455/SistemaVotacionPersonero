@@ -9,6 +9,7 @@ import SistemaVotacion.Modelos.Estudiantes;
 import SistemaVotacion.Modelos.Candidatos;
 import SistemaVotacion.ConexionBD.DAO.CandidatosDAO;
 import SistemaVotacion.ConexionBD.DAO.EstudiantesDAO;
+import com.formdev.flatlaf.FlatClientProperties;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Level;
@@ -44,7 +45,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         llenarEstudiante();
         BtEliminarCandidatos.setEnabled(false);
         actualizarInterfazCandidatos();
-                
+        estilos();
    
         
     }
@@ -187,6 +188,67 @@ public class RegistroCandidatos extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Error al actualizar la interfaz de candidatos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    
+    public void estilos() {
+        // Estilo para el título "Estudiantes de 11°"
+        LbEstudiantes11.putClientProperty(FlatClientProperties.STYLE, ""
+                + "font: bold 16 'Segoe UI';"
+                + "foreground: #E0E0E0");
+
+        // Estilo común para los labels de candidatos
+        String labelCandidatoStyle = ""
+                + "font: 14 'Segoe UI';"
+                + "foreground: #B0B0B0";
+
+        jLabel1.putClientProperty(FlatClientProperties.STYLE, labelCandidatoStyle);
+        jLabel2.putClientProperty(FlatClientProperties.STYLE, labelCandidatoStyle);
+        jLabel3.putClientProperty(FlatClientProperties.STYLE, labelCandidatoStyle);
+
+        // Estilo para los campos de texto
+        String textFieldStyle = ""
+                + "background: #34495E;"
+                + "foreground: #FFFFFF;"
+                + "caretColor: #FFFFFF;"
+             
+                + "arc: 5";
+
+        TxtCandidato1.putClientProperty(FlatClientProperties.STYLE, textFieldStyle);
+        TxtCandidato2.putClientProperty(FlatClientProperties.STYLE, textFieldStyle);
+        TxtCandidato3.putClientProperty(FlatClientProperties.STYLE, textFieldStyle);
+
+        // Estilo para el ComboBox
+        ComboEstudiantes11.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #34495E;"
+                + "foreground: #FFFFFF;"
+
+                + "arc: 5");
+
+        // Estilo para los botones
+        String buttonStyle = ""
+                + "background: #2C3E50;"
+                + "foreground: #FFFFFF;"
+                + "focusedBackground: darken(#2C3E50,10%);"
+                + "hoverBackground: darken(#2C3E50,5%);"
+                + "pressedBackground: darken(#2C3E50,15%);"
+                + "font: bold 12 'Segoe UI';"
+          
+                + "arc: 8";
+
+        BtCarga.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+        BtRegistar.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+
+        
+        BtEliminarCandidatos.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #C0392B;"
+                + "foreground: #FFFFFF;"
+                + "focusedBackground: darken(#C0392B,10%);"
+                + "hoverBackground: darken(#C0392B,5%);"
+                + "pressedBackground: darken(#C0392B,15%);"
+                + "font: bold 12 'Segoe UI';"
+         
+                + "arc: 8");
+    }
 
     
     
@@ -216,6 +278,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         TxtCandidato1 = new javax.swing.JTextField();
         BtCarga = new javax.swing.JButton();
         BtEliminarCandidatos = new javax.swing.JButton();
+        BtHelp = new SistemaVotacion.MyButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -259,6 +322,14 @@ public class RegistroCandidatos extends javax.swing.JFrame {
             }
         });
 
+        BtHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/signo-de-interrogacion.png"))); // NOI18N
+        BtHelp.setRadius(500);
+        BtHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtHelpActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PanelCandidatosLayout = new javax.swing.GroupLayout(PanelCandidatos);
         PanelCandidatos.setLayout(PanelCandidatosLayout);
         PanelCandidatosLayout.setHorizontalGroup(
@@ -289,11 +360,17 @@ public class RegistroCandidatos extends javax.swing.JFrame {
                             .addComponent(TxtCandidato3, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(61, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelCandidatosLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(22, 22, 22))
         );
         PanelCandidatosLayout.setVerticalGroup(
             PanelCandidatosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelCandidatosLayout.createSequentialGroup()
-                .addGap(56, 56, 56)
+                .addGap(14, 14, 14)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(2, 2, 2)
                 .addGroup(PanelCandidatosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(LbEstudiantes11)
                     .addComponent(ComboEstudiantes11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -372,6 +449,11 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_BtEliminarCandidatosActionPerformed
 
+    private void BtHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtHelpActionPerformed
+        // TODO add your handling code here:
+        Tutorial.getInstance().mostrarTutorial(this, "RegistroCandidatos");
+    }//GEN-LAST:event_BtHelpActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -410,6 +492,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtCarga;
     private javax.swing.JButton BtEliminarCandidatos;
+    private SistemaVotacion.MyButton BtHelp;
     private javax.swing.JButton BtRegistar;
     private javax.swing.JComboBox<String> ComboEstudiantes11;
     private javax.swing.JLabel LbEstudiantes11;

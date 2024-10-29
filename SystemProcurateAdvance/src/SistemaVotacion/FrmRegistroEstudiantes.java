@@ -10,7 +10,8 @@ import SistemaVotacion.Modelos.Estudiantes;
 import SistemaVotacion.Modelos.Candidatos;
 import SistemaVotacion.ConexionBD.DAO.EstudiantesDAO;
 import SistemaVotacion.ConexionBD.DAO.GradosDAO;
-import static java.awt.image.ImageObserver.ERROR;
+import com.formdev.flatlaf.FlatClientProperties;
+
 
 
 import javax.swing.JOptionPane;
@@ -41,7 +42,8 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
         TxtDocumento.setText("");
         llenarGrados();
     }
-
+    
+ 
     public void setFormularioPrincipal(FrmPrincipal formularioPrincipal) {
         this.formularioPrincipal = formularioPrincipal;
     }
@@ -124,6 +126,53 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
 
     private void estilos() {
         BtSave.putClientProperty("JButton.buttonType", "roundRect");
+        LbNombre.putClientProperty(FlatClientProperties.STYLE, ""
+            + "font: bold 14 'Segoe UI';"
+            + "foreground: #E0E0E0;"
+           );
+            
+    // Estilo para "Apellido:"
+    LbApellido.putClientProperty(FlatClientProperties.STYLE, ""
+            + "font: bold 14 'Segoe UI';"
+            + "foreground: #E0E0E0;"
+            );
+            
+    // Estilo para "Documento:"
+    LbDocumento.putClientProperty(FlatClientProperties.STYLE, ""
+            + "font: bold 14 'Segoe UI';"
+            + "foreground: #E0E0E0;"
+            );
+            
+    // Estilo para "Grado del Estudiante:"
+    LbGrado.putClientProperty(FlatClientProperties.STYLE, ""
+            + "font: bold 14 'Segoe UI';"
+            + "foreground: #E0E0E0;"
+           );
+            
+    // Estilo para el botón Guardar
+    BtSave.putClientProperty(FlatClientProperties.STYLE, ""
+            + "background: #2C3E50;"
+            + "foreground: #FFFFFF;"
+            + "focusedBackground: darken(#2C3E50,10%);"
+            + "hoverBackground: darken(#2C3E50,5%);"
+            + "pressedBackground: darken(#2C3E50,15%);"
+            + "font: bold 12 'Segoe UI';"
+            + "borderWidth: 0;"
+            + "arc: 10;"
+            );
+            
+    // Estilo para los campos de texto
+    String textFieldStyle = ""
+            + "background: #34495E;"
+            + "foreground: #FFFFFF;"
+            + "caretColor: #FFFFFF;"
+            + "borderWidth: 1;"
+            + "arc: 5;";
+
+            
+    TxtNombre.putClientProperty(FlatClientProperties.STYLE, textFieldStyle);
+    TxtApellido.putClientProperty(FlatClientProperties.STYLE, textFieldStyle);
+    TxtDocumento.putClientProperty(FlatClientProperties.STYLE, textFieldStyle);
     }
 
     public JPanel getPanel() {
@@ -167,6 +216,7 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
         LbGrado = new javax.swing.JLabel();
         BtSave = new javax.swing.JButton();
         BarraProgreso = new javax.swing.JProgressBar();
+        BtHelp = new SistemaVotacion.MyButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -208,6 +258,14 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
             }
         });
 
+        BtHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/signo-de-interrogacion.png"))); // NOI18N
+        BtHelp.setRadius(500);
+        BtHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtHelpActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PanelRegistroLayout = new javax.swing.GroupLayout(PanelRegistro);
         PanelRegistro.setLayout(PanelRegistroLayout);
         PanelRegistroLayout.setHorizontalGroup(
@@ -216,27 +274,33 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
                 .addGap(59, 59, 59)
                 .addGroup(PanelRegistroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(LbDocumento)
-                    .addComponent(LbApellido, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(LbGrado)
-                    .addComponent(LbNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 117, Short.MAX_VALUE)
+                    .addComponent(LbNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(LbApellido, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 173, Short.MAX_VALUE)
                 .addGroup(PanelRegistroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(BtSave, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ComboGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(PanelRegistroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(TxtApellido, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(TxtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(TxtDocumento, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(ComboGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(396, 396, 396))
+                        .addComponent(TxtDocumento, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(340, 340, 340))
             .addGroup(PanelRegistroLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(BarraProgreso, javax.swing.GroupLayout.PREFERRED_SIZE, 211, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelRegistroLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(105, 105, 105))
         );
         PanelRegistroLayout.setVerticalGroup(
             PanelRegistroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelRegistroLayout.createSequentialGroup()
-                .addGap(57, 57, 57)
+                .addGap(16, 16, 16)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(1, 1, 1)
                 .addGroup(PanelRegistroLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(LbNombre)
                     .addComponent(TxtNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -307,6 +371,11 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
         
     }//GEN-LAST:event_BtSaveActionPerformed
 
+    private void BtHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtHelpActionPerformed
+        // TODO add your handling code here:
+         Tutorial.getInstance().mostrarTutorial(this, "FrmRegistroEstudiantes");
+    }//GEN-LAST:event_BtHelpActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -352,6 +421,7 @@ public class FrmRegistroEstudiantes extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar BarraProgreso;
+    private SistemaVotacion.MyButton BtHelp;
     private javax.swing.JButton BtSave;
     private javax.swing.JComboBox<String> ComboGrado;
     private javax.swing.JLabel LbApellido;

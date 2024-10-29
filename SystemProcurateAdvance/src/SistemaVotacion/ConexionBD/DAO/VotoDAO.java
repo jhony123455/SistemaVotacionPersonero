@@ -57,7 +57,7 @@ public class VotoDAO {
      
       public boolean hayVotosRegistrados() throws SQLException {
         boolean hayVotos = false;
-        String sql = "SELECT COUNT(*) FROM Votos"; 
+       String sql = "{CALL contarVotosRegistrados()}"; 
 
         try (Connection conn = conexion.getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql);

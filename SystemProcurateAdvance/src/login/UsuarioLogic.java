@@ -22,8 +22,14 @@ public class UsuarioLogic {
     }
 
     public static boolean insertar(Usuario usuario) {
+        boolean existe = usuariodao.existeUsuario(usuario.getUser());
+        System.out.println("¿Existe el usuario?: " + existe);
+        if (existe) {
+            return false; 
+        }
         return usuariodao.insertar(usuario);
     }
+
 
    /* public static boolean modificar(Usuario usuario) {
         return usuariodao.modificar(usuario);

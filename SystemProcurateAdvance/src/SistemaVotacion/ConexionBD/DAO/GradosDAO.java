@@ -25,7 +25,7 @@ public class GradosDAO {
 
     public List<Grados> obtenerGrados() {
         List<Grados> listaGrados = new ArrayList<>();
-        String sql = "SELECT * FROM Grado";
+        String sql = "call obtenerTodosLosGrados()";
         try (Connection con = conexion.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

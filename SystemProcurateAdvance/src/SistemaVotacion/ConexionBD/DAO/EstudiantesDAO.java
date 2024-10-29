@@ -117,7 +117,7 @@ public class EstudiantesDAO {
 
     public List<Estudiantes> obtenerTodosLosEstudiantes() {
         List<Estudiantes> estudiantes = new ArrayList<>();
-        String sql = "SELECT * FROM Estudiante";
+        String sql = "call obtenerTodosLosEstudiantes()";
         try (Connection con = conexion.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {

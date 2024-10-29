@@ -7,6 +7,10 @@ import SistemaVotacion.ConexionBD.DAO.CandidatosDAO;
 import SistemaVotacion.ConexionBD.DAO.EstudiantesDAO;
 import SistemaVotacion.ConexionBD.DAO.GradosDAO;
 import SistemaVotacion.ConexionBD.DAO.UsuarioDAO;
+import com.formdev.flatlaf.FlatClientProperties;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -15,11 +19,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
@@ -52,9 +59,13 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
         llenarComboGrados();
         try {
             FiltroCandidatos();
+            
         } catch (SQLException ex) {
             Logger.getLogger(MostrarEstudiantes.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        estilos();
+        
 
       
     }
@@ -235,6 +246,93 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
       public JPanel getPanel() {
         return PanelMostrar;
     }
+      
+      
+      
+    
+    public void estilos() {
+
+        String comboBoxStyle = ""
+                + "background: #34495E;"
+                + "foreground: #FFFFFF;"
+                + "arc: 5";
+        ComboEstudiantes.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
+
+        // Button styles
+        String buttonStyle = ""
+                + "background: #2C3E50;"
+                + "foreground: #B0B0B0;"
+                + "focusedBackground: darken(#2C3E50,10%);"
+                + "hoverBackground: darken(#2C3E50,5%);"
+                + "pressedBackground: darken(#2C3E50,15%);"
+                + "font: bold 12 'Segoe UI';"
+                + "arc: 8";
+        BtSearch.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
+
+        // Special style for export button
+        BtExportar.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #3498DB;"
+                + "foreground: #FFFFFF;"
+                + "focusedBackground: darken(#3498DB,10%);"
+                + "hoverBackground: darken(#3498DB,5%);"
+                + "pressedBackground: darken(#3498DB,15%);"
+                + "font: bold 12 'Segoe UI';"
+                + "arc: 8");
+
+        // Panel styles
+        PanelMostrar.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #2C3E50;"
+                + "arc: 5");
+
+        // Common table styling method
+        setupTableStyle(jScrollPane1.getViewport().getView());
+        setupTableStyle(jScrollPane2.getViewport().getView());
+    }
+
+// Separate method for table styling to avoid code duplication
+    private void setupTableStyle(Component view) {
+        if (!(view instanceof JTable)) {
+            return;
+        }
+        JTable table = (JTable) view;
+
+        table.putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #1E2837;"
+                + "foreground: #FFFFFF;");
+
+        table.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
+                + "background: #2C3E50;"
+                + "foreground: #FFFFFF;"
+                + "font: bold 12 'Segoe UI';"
+                + "separatorColor: #34495E;"
+                + "hoverBackground: darken(#2C3E50, 5%)");
+
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value,
+                        isSelected, hasFocus, row, column);
+                if (isSelected) {
+                    c.setBackground(new Color(52, 152, 219));
+                    c.setForeground(Color.WHITE);
+                } else {
+                    if (row % 2 == 0) {
+                        c.setBackground(new Color(30, 40, 55));
+                    } else {
+                        c.setBackground(new Color(35, 45, 60));
+                    }
+                    c.setForeground(Color.WHITE);
+                }
+                ((JLabel) c).setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                return c;
+            }
+        });
+
+        table.setRowHeight(30);
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+    }
 
 
     /**
@@ -254,6 +352,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         TableCandidatos = new javax.swing.JTable();
         BtExportar = new javax.swing.JButton();
+        BtHelp = new SistemaVotacion.MyButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -274,7 +373,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
                 {null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "Wait", "Wait", "Wait", "Wait"
             }
         ));
         jScrollPane1.setViewportView(TableEstudiantes);
@@ -299,6 +398,14 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
             }
         });
 
+        BtHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SistemaVotacion/Recursos/signo-de-interrogacion.png"))); // NOI18N
+        BtHelp.setRadius(500);
+        BtHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtHelpActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout PanelMostrarLayout = new javax.swing.GroupLayout(PanelMostrar);
         PanelMostrar.setLayout(PanelMostrarLayout);
         PanelMostrarLayout.setHorizontalGroup(
@@ -318,22 +425,29 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
                     .addComponent(jScrollPane2)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE))
                 .addGap(66, 66, 66))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelMostrarLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         PanelMostrarLayout.setVerticalGroup(
             PanelMostrarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelMostrarLayout.createSequentialGroup()
-                .addGap(36, 36, 36)
+                .addContainerGap()
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(PanelMostrarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 165, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(PanelMostrarLayout.createSequentialGroup()
+                        .addGap(19, 19, 19)
                         .addComponent(ComboEstudiantes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(53, 53, 53)
+                        .addGap(34, 34, 34)
                         .addComponent(BtSearch)
                         .addGap(18, 18, 18)
                         .addComponent(BtExportar)))
                 .addGap(36, 36, 36)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(164, Short.MAX_VALUE))
+                .addContainerGap(148, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -373,6 +487,11 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
 
     }//GEN-LAST:event_BtExportarActionPerformed
 
+    private void BtHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtHelpActionPerformed
+        // TODO add your handling code here:
+        Tutorial.getInstance().mostrarTutorial(this, "MostrarEstudiantes");
+    }//GEN-LAST:event_BtHelpActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -410,6 +529,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BtExportar;
+    private SistemaVotacion.MyButton BtHelp;
     private javax.swing.JButton BtSearch;
     private javax.swing.JComboBox<String> ComboEstudiantes;
     private javax.swing.JPanel PanelMostrar;

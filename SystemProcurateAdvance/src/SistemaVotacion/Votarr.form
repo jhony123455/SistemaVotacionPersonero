@@ -43,15 +43,24 @@
                           <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace pref="283" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="RbC3" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="RbC2" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="RbC1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="RbVotoenBlanco" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
-                          <Component id="lbreloj" min="-2" pref="279" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="RbC3" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RbC2" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RbC1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="RbVotoenBlanco" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
+                                  <Component id="lbreloj" min="-2" pref="279" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="BtHelp" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -89,6 +98,10 @@
                       <Component id="RbC3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="RbVotoenBlanco" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                      <Component id="BtHelp" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace pref="69" max="32767" attributes="0"/>
@@ -191,6 +204,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="jLabel4"/>
       </Properties>
+    </Component>
+    <Component class="SistemaVotacion.MyButton" name="BtHelp">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/SistemaVotacion/Recursos/signo-de-interrogacion.png"/>
+        </Property>
+        <Property name="radius" type="int" value="500"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BtHelpActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
