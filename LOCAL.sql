@@ -444,6 +444,7 @@ CREATE FUNCTION insertarUsuario(
     contrasena VARCHAR(255)
 )
 RETURNS BOOLEAN
+DETERMINISTIC
 
 BEGIN
     DECLARE resultado BOOLEAN;
