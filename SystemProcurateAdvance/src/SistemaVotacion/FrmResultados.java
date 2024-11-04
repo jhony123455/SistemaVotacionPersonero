@@ -46,10 +46,12 @@ public class FrmResultados extends javax.swing.JFrame {
   String[] encabezado2 = {"NºEleccion", "Total_Votos", "Fecha_Conteo"};
     private FrmPrincipal frmPrincipal;
    GradosDAO gradosdao;
+   Eleccion eleccion;
     public FrmResultados(FrmPrincipal principal) {
         initComponents();
         this.frmPrincipal = principal;
         gradosdao = new GradosDAO();
+   
         cargarElecciones();
         llenarComboGrados();
         CbGrados.setVisible(false);
@@ -140,7 +142,7 @@ public class FrmResultados extends javax.swing.JFrame {
 
             for (Resultados resultado : resultados) {
                 for (Candidatos candidato : resultado.getCandidatos()) {
-                    String nombre = "Voto Nulo".equals(candidato.getEstudiante().getNombre()) ? "Voto Nulo" : candidato.getEstudiante().getNombre();
+                    String nombre = "Voto en blanco".equals(candidato.getEstudiante().getNombre()) ? "Voto en Blanco" : candidato.getEstudiante().getNombre();
                     String apellido = candidato.getEstudiante().getApellido();
                     int votosObtenidos = candidato.getVotosObtenidos();
                     model.addRow(new Object[]{nombre, apellido, votosObtenidos});
@@ -166,7 +168,7 @@ public class FrmResultados extends javax.swing.JFrame {
         model.setColumnIdentifiers(encabezado);
         for (Resultados resultado : resultados) {
             for (Candidatos candidato : resultado.getCandidatos()) {
-                String nombre = "Voto Nulo".equals(candidato.getEstudiante().getNombre()) ? "Voto Nulo" : candidato.getEstudiante().getNombre();
+                String nombre = "Voto en Blanco".equals(candidato.getEstudiante().getNombre()) ? "Voto en Blanco" : candidato.getEstudiante().getNombre();
                 String apellido = candidato.getEstudiante().getApellido();
                 int votosObtenidos = candidato.getVotosObtenidos();
                 model.addRow(new Object[]{
@@ -233,93 +235,125 @@ public class FrmResultados extends javax.swing.JFrame {
     
 
 
-public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabezado) throws WriteException {
-    try {
-       
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        String rutaProyecto = System.getProperty("user.dir");
-        String rutaCompleta = rutaProyecto + File.separator + rutaBase + "_" + timestamp + ".xls";
-        
-        WritableWorkbook workbook = jxl.Workbook.createWorkbook(new File(rutaCompleta));
-        WritableSheet sheet = workbook.createSheet("Hoja 1", 0);
+    public void exportarResultadosAExcel(int eleccionId, String rutaBase) {
+        try {
+            ResultadoDAO resultadosdao = new ResultadoDAO();
+          
+            List<Resultados> resultadosPorCandidato = resultadosdao.obtenerResultadosPorCandidato(eleccionId);
+            List<Resultados> resultadosTotales = resultadosdao.obtenerResultadosTotales(eleccionId);
 
-        // Escribir encabezados
-        for (int i = 0; i < encabezado.length; i++) {
-            Label label = new Label(i, 0, encabezado[i]);
-            sheet.addCell(label);
-        }
+            
+            String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String rutaProyecto = System.getProperty("user.dir");
+            String rutaCompleta = rutaProyecto + File.separator + rutaBase + "_" + timestamp + ".xls";
 
-        // Escribir datos de la tabla
-        for (int row = 0; row < tabla.getRowCount(); row++) {
-            for (int col = 0; col < tabla.getColumnCount(); col++) {
-                Object value = tabla.getValueAt(row, col);
-                Label label = new Label(col, row + 1, value != null ? value.toString() : "");
-                sheet.addCell(label);
+            
+            WritableWorkbook workbook = jxl.Workbook.createWorkbook(new File(rutaCompleta));
+
+            // Primera hoja: Resultados por Candidato
+            WritableSheet sheetCandidatos = workbook.createSheet("Resultados por Candidato", 0);
+            String[] encabezadoCandidatos = {"Nombre", "Apellido", "Votos Obtenidos"};
+
+            
+            for (int i = 0; i < encabezadoCandidatos.length; i++) {
+                Label label = new Label(i, 0, encabezadoCandidatos[i]);
+                sheetCandidatos.addCell(label);
             }
+
+          
+            int rowCandidatos = 1;
+            for (Resultados resultado : resultadosPorCandidato) {
+                for (Candidatos candidato : resultado.getCandidatos()) {
+                    String nombre = "Voto en blanco".equals(candidato.getEstudiante().getNombre())
+                            ? "Voto en Blanco"
+                            : candidato.getEstudiante().getNombre();
+
+                    sheetCandidatos.addCell(new Label(0, rowCandidatos, nombre));
+                    sheetCandidatos.addCell(new Label(1, rowCandidatos, candidato.getEstudiante().getApellido()));
+                    
+                    jxl.write.Number numberCell = new jxl.write.Number(2, rowCandidatos, candidato.getVotosObtenidos());
+                    sheetCandidatos.addCell(numberCell);
+                    rowCandidatos++;
+                }
+            }
+
+            // Segunda hoja: Resultados Totales
+            WritableSheet sheetTotales = workbook.createSheet("Resultados Totales", 1);
+            String[] encabezadoTotales = {"NºEleccion", "Total_Votos", "Fecha_Conteo"};
+
+          
+            for (int i = 0; i < encabezadoTotales.length; i++) {
+                Label label = new Label(i, 0, encabezadoTotales[i]);
+                sheetTotales.addCell(label);
+            }
+
+         
+            int rowTotales = 1;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            for (Resultados resultado : resultadosTotales) {
+                jxl.write.Number idEleccion = new jxl.write.Number(0, rowTotales, resultado.getEleccion().getIdeleccion());
+                jxl.write.Number totalVotos = new jxl.write.Number(1, rowTotales, resultado.getTotalVotos());
+                Label fecha = new Label(2, rowTotales, resultado.getFechaConteo().format(formatter));
+
+                sheetTotales.addCell(idEleccion);
+                sheetTotales.addCell(totalVotos);
+                sheetTotales.addCell(fecha);
+                rowTotales++;
+            }
+
+           
+            workbook.write();
+            workbook.close();
+
+            JOptionPane.showMessageDialog(null, "Resultados exportados exitosamente", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al exportar los resultados: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        workbook.write();
-        workbook.close();
-        JOptionPane.showMessageDialog(null, "Informe exportado", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-    } catch (IOException e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al guardar", "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
 
-    
-    
-    public void loginParaExportar(JTable tabla, String ruta, String[] encabezado) {
+    public void verificarYExportarResultados(int eleccionId, String rutaBase) {
+        if (Sesion.haySesionActiva()) {
+            if (Sesion.esAdmin()) {
+                exportarResultadosAExcel(eleccionId, rutaBase);
+            } else {
+                loginParaExportarResultados(eleccionId, rutaBase);
+            }
+        } else {
+            loginParaExportarResultados(eleccionId, rutaBase);
+        }
+    }
+
+    private void loginParaExportarResultados(int eleccionId, String rutaBase) {
         JTextField usr = new JTextField();
         int actionLogin = JOptionPane.showConfirmDialog(null, usr, "Usuario", JOptionPane.OK_CANCEL_OPTION);
 
         if (actionLogin > 0) {
             JOptionPane.showMessageDialog(null, "Operación cancelada");
-        } else {
-            JPasswordField pwd = new JPasswordField();
-            int action = JOptionPane.showConfirmDialog(null, pwd, "Contraseña", JOptionPane.OK_CANCEL_OPTION);
-
-            if (action > 0) {
-                JOptionPane.showMessageDialog(null, "Operación cancelada");
-            } else {
-                String usuario = usr.getText();
-                String pass = new String(pwd.getPassword());
-
-                UsuarioDAO usuarioDAO = new UsuarioDAO();
-                Usuario user = usuarioDAO.autenticar(usuario, pass); 
-
-                if (user != null && user.getIdRol() == 1) {  
-                    Sesion.usuarioActual = user; 
-                    try {
-                        ExportToExcel(tabla, ruta, encabezado);  
-                    } catch (WriteException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "No eres el Admin, no puedes exportar", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
+            return;
         }
-    }
 
-    public void verificarYExportar(JTable tabla, String ruta, String[] encabezado) {
-       
-        if (Sesion.haySesionActiva()) {
-         
-            if (Sesion.esAdmin()) {
-                try {
-                    ExportToExcel(tabla, ruta, encabezado);  
-                    return;
-                } catch (WriteException e) {
-                    e.printStackTrace();
-                }
-            } else {
-              
-                loginParaExportar(tabla, ruta, encabezado);
-            }
+        JPasswordField pwd = new JPasswordField();
+        int action = JOptionPane.showConfirmDialog(null, pwd, "Contraseña", JOptionPane.OK_CANCEL_OPTION);
+
+        if (action > 0) {
+            JOptionPane.showMessageDialog(null, "Operación cancelada");
+            return;
+        }
+
+        String usuario = usr.getText();
+        String pass = new String(pwd.getPassword());
+        UsuarioDAO usuarioDAO = new UsuarioDAO();
+        Usuario user = usuarioDAO.autenticar(usuario, pass);
+
+        if (user != null && Sesion.esAdmin()) {
+            exportarResultadosAExcel(eleccionId, rutaBase);
         } else {
-            // Si no hay sesión, pedir login
-            loginParaExportar(tabla, ruta, encabezado);
+            JOptionPane.showMessageDialog(null, "No tienes permisos de administrador para exportar",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -331,7 +365,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
       
       
     public void estilos() {
-        // Estilo para los ComboBox
+   
         String comboBoxStyle = ""
                 + "background: #34495E;"
                 + "foreground: #FFFFFF;"
@@ -342,7 +376,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         CbGrados.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
         CbElecciones.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
 
-        // Estilo común para todos los botones
+      
         String buttonStyle = ""
                 + "background: #2C3E50;"
                 + "foreground: #B0B0B0;"
@@ -358,7 +392,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         BtPorGrado.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         BtGeneral.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
 
-        // Estilo especial para el botón Exportar
+        
         BtExportar.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background: #3498DB;"
                 + "foreground: #FFFFFF;"
@@ -407,7 +441,7 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
                     c.setForeground(Color.WHITE);
                 }
 
-                // Bordes de las celdas
+            
                 ((JLabel) c).setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
                 return c;
@@ -513,53 +547,48 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
         PanelResultLayout.setHorizontalGroup(
             PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelResultLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(PanelResultLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(BtGeneral, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(PanelResultLayout.createSequentialGroup()
-                                .addComponent(BtPorGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(BtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(BtExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(BtPorGrado, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(BtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(PanelResultLayout.createSequentialGroup()
+                        .addComponent(BtCargar, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(BtCargar, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(BtGeneral, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BtExportar, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         PanelResultLayout.setVerticalGroup(
             PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelResultLayout.createSequentialGroup()
                 .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(PanelResultLayout.createSequentialGroup()
-                        .addGap(60, 60, 60)
-                        .addComponent(BtCargar)
-                        .addGap(18, 18, 18)
-                        .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(29, 29, 29)
-                        .addComponent(BtTotal)
-                        .addGap(18, 18, 18)
+                        .addGap(57, 57, 57)
                         .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(BtPorGrado)
-                            .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(BtCargar)
+                            .addComponent(CbElecciones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
+                        .addComponent(BtTotal)
+                        .addGap(26, 26, 26)
+                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(CbGrados, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(BtPorGrado))
+                        .addGap(37, 37, 37)
                         .addComponent(BtGeneral)
-                        .addGap(18, 18, 18)
+                        .addGap(30, 30, 30)
                         .addComponent(BtExportar))
+                    .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(PanelResultLayout.createSequentialGroup()
-                        .addGap(15, 15, 15)
-                        .addGroup(PanelResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(BtHelp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(29, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -645,7 +674,26 @@ public static void ExportToExcel(JTable tabla, String rutaBase, String[] encabez
 
     private void BtExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtExportarActionPerformed
         // TODO add your handling code here:
-        verificarYExportar(TableResultados, "resultados.xls", encabezado);
+       
+        String eleccionSeleccionada = (String) CbElecciones.getSelectedItem();
+
+        if (eleccionSeleccionada == null || eleccionSeleccionada.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Por favor seleccione una elección",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            int idEleccion = extraerIdEleccion(eleccionSeleccionada);
+            verificarYExportarResultados(idEleccion, "ResultadosEleccion");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Error al exportar los resultados: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
         
     }//GEN-LAST:event_BtExportarActionPerformed
 

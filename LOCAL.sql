@@ -300,25 +300,45 @@ END //
 
 CREATE PROCEDURE ObtenerResultadosPorCandidato(IN eleccionId INT)
 BEGIN
+
     SELECT 
-        COALESCE(c.Id_Candidato, 0) AS ID_Candidato,
-        COALESCE(e.Nombre, 'Voto en Blanco') AS Nombre,
-        COALESCE(e.Apellido, '') AS Apellido,
+        c.Id_Candidato,
+        e.Nombre,
+        e.Apellido,
+        COUNT(v.Id_Voto) AS Votos_Obtenidos
+    FROM 
+        Candidato c
+        JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante
+        LEFT JOIN Voto v ON v.FkCandidato = c.Id_Candidato 
+            AND v.FkEleccion = eleccionId
+    WHERE 
+        c.Id_Candidato IN (
+
+            SELECT DISTINCT FkCandidato 
+            FROM Voto 
+            WHERE FkEleccion = eleccionId 
+            AND FkCandidato IS NOT NULL
+        )
+    GROUP BY 
+        c.Id_Candidato,
+        e.Nombre,
+        e.Apellido
+    
+    UNION ALL
+    SELECT 
+        0 AS Id_Candidato,
+        'Voto en Blanco' AS Nombre,
+        '' AS Apellido,
         COUNT(v.Id_Voto) AS Votos_Obtenidos
     FROM 
         Voto v
-        LEFT JOIN Candidato c ON v.FkCandidato = c.Id_Candidato
-        LEFT JOIN Estudiante e ON c.FkEstudiante = e.Id_Estudiante
     WHERE 
-        v.FkEleccion = eleccionId
-    GROUP BY 
-        COALESCE(c.Id_Candidato, 0),
-        COALESCE(e.Nombre, 'Voto en Blanco'),
-        COALESCE(e.Apellido, '')
+        v.FkEleccion = eleccionId 
+        AND v.FkCandidato IS NULL
+    
     ORDER BY 
-        ID_Candidato;
-END//
-
+        Id_Candidato;
+END //
 
 CREATE PROCEDURE ObtenerResultadosPorGrado(IN eleccionId INT, IN gradoId INT)
 BEGIN
@@ -381,7 +401,7 @@ DELETE FROM Eleccion;//
 
 SET GLOBAL event_scheduler = ON;
 
--- evento que actualiza el estado de la eleccion 
+
 CREATE EVENT update_election_status
 ON SCHEDULE EVERY 1 minute
 DO
@@ -395,40 +415,27 @@ CREATE EVENT update_candidatoporeleccion
 ON SCHEDULE EVERY 1 MINUTE
 DO
 BEGIN
-    DECLARE finished_election_id INT;
-
-    DECLARE election_cursor CURSOR FOR 
-    SELECT Id_Eleccion
-    FROM Eleccion
-    WHERE Fecha_Fin < NOW() AND Estado = 'Finalizada';
-
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished_election_id = NULL;
-
-    OPEN election_cursor;
-
-    election_loop: LOOP
-        FETCH election_cursor INTO finished_election_id;
-        IF finished_election_id IS NULL THEN
-            LEAVE election_loop;
-        END IF;
-
-        INSERT INTO candidatoporeleccion (idCandidato, idEleccion)
-        SELECT c.Id_Candidato, e.Id_Eleccion
-        FROM Candidato c
-        INNER JOIN Eleccion e ON e.Id_Eleccion = finished_election_id
-        WHERE NOT EXISTS (
+ 
+    INSERT INTO candidatoporeleccion (idCandidato, idEleccion)
+    SELECT DISTINCT 
+        c.Id_Candidato, 
+        e.Id_Eleccion
+    FROM 
+        Eleccion e
+        INNER JOIN Candidato c ON c.activo = TRUE
+    WHERE 
+        e.Estado = 'Finalizada'
+        AND NOT EXISTS (
             SELECT 1 
             FROM candidatoporeleccion ce 
             WHERE ce.idCandidato = c.Id_Candidato 
-            AND ce.idEleccion = finished_election_id
+            AND ce.idEleccion = e.Id_Eleccion
         );
 
-        UPDATE Eleccion
-        SET Estado = 'Procesada'
-        WHERE Id_Eleccion = finished_election_id;
-    END LOOP;
 
-    CLOSE election_cursor;
+    UPDATE Eleccion
+    SET Estado = 'Procesada'
+    WHERE Estado = 'Finalizada';
 END//
 
 
@@ -736,5 +743,4 @@ BEGIN
     INSERT INTO Usuario_backup (Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado, Fecha_Creacion, Operacion, Usuario)
     VALUES (OLD.Id_Usuario, OLD.Nombre_Usuario, OLD.Contrasena, OLD.Id_Rol, OLD.Estado, OLD.Fecha_Creacion, 'DELETE', USER());
 END//
-
 

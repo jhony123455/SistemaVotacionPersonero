@@ -24,6 +24,7 @@ import com.formdev.flatlaf.intellijthemes.FlatGradiantoDeepOceanIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatCobalt2IJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatGradiantoMidnightBlueIJTheme;
 import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme;
+import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
@@ -92,6 +93,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
             }
         });
+         setSize(1200, 750);
 
     }
     
@@ -353,7 +355,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
             
             login.setVisible(true);
         }else if (opcion == JOptionPane.NO_OPTION){
-            JOptionPane.showMessageDialog(this, "Operacion Cancelada", "Cancelado", JOptionPane.CANCEL_OPTION);
+           
             this.setVisible(true);
         }
     }
@@ -692,7 +694,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         // TODO add your handling code here:
         List<Usuario> usuariosRol2 = usuariodao.obtenerUsuariosRol2();
         if (usuariosRol2.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No hay usuarios con rol 2 disponibles para desactivar.");
+            JOptionPane.showMessageDialog(this, "No hay usuarios disponibles para desactivar.");
             return;
         }
 

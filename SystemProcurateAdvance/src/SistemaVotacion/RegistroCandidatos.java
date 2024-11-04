@@ -315,7 +315,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
             }
         });
 
-        BtEliminarCandidatos.setText("Eliminar Candidatos");
+        BtEliminarCandidatos.setText("Deshabilitar Candidatos");
         BtEliminarCandidatos.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtEliminarCandidatosActionPerformed(evt);
@@ -346,7 +346,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(BtRegistar, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(BtEliminarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(BtEliminarCandidatos, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(PanelCandidatosLayout.createSequentialGroup()
                         .addGroup(PanelCandidatosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -423,7 +423,7 @@ public class RegistroCandidatos extends javax.swing.JFrame {
         // TODO add your handling code here:
                 
         int confirmacion = JOptionPane.showConfirmDialog(this,
-                "¿Está seguro de que desea eliminar todos los candidatos?",
+                "¿Está seguro de que desea Deshabilitar a los candidatos actuales?",
                 "Confirmar eliminación",
                 JOptionPane.YES_NO_OPTION);
 
@@ -432,19 +432,19 @@ public class RegistroCandidatos extends javax.swing.JFrame {
                 boolean eliminacionExitosa = candidatosdao.desactivarTodosLosCandidatos();
                 if (eliminacionExitosa) {
                     JOptionPane.showMessageDialog(this,
-                            "Todos los candidatos han sido eliminados.",
-                            "Eliminación exitosa",
+                            "Todos los candidatos han sido deshabilitados.",
+                            "exito",
                             JOptionPane.INFORMATION_MESSAGE);
                     actualizarInterfazCandidatos();
                     formularioPrincipal.actualizarEstado();
                 } else {
                     JOptionPane.showMessageDialog(this,
-                            "Hubo un problema al eliminar los candidatos.",
+                            "Hubo un problema al Deshabilitar los candidatos.",
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error al eliminar los candidatos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error al deshabilitar los candidatos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_BtEliminarCandidatosActionPerformed

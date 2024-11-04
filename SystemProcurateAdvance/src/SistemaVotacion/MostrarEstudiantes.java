@@ -145,7 +145,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
 
             WritableWorkbook workbook = jxl.Workbook.createWorkbook(new File(rutaCompleta));
 
-            // Hoja para estudiantes
+           
             WritableSheet sheetEstudiantes = workbook.createSheet("Estudiantes", 0);
             String[] encabezadoEstudiantes = {"Nombre", "Apellido", "Documento", "Grado"};
             for (int i = 0; i < encabezadoEstudiantes.length; i++) {
@@ -161,7 +161,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
                 rowEstudiantes++;
             }
 
-            // Hoja para candidatos
+          
             WritableSheet sheetCandidatos = workbook.createSheet("Candidatos", 1);
             String[] encabezadoCandidatos = {"Nombre Completo", "Propuesta"};
             for (int i = 0; i < encabezadoCandidatos.length; i++) {
