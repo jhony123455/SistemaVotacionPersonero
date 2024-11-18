@@ -31,12 +31,6 @@ public class UsuarioLogic {
     }
 
 
-   /* public static boolean modificar(Usuario usuario) {
-        return usuariodao.modificar(usuario);
-    }
-
-    public static boolean eliminar(String usuario) {
-        return usuariodao.eliminar(usuario);
-    }*/
+   
 
 }

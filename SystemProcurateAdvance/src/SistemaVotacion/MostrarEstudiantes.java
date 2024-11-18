@@ -139,7 +139,7 @@ public class MostrarEstudiantes extends javax.swing.JFrame {
             CandidatosDAO candidatosDAO = new CandidatosDAO();
             List<Candidatos> todosCandidatos = candidatosDAO.obtenerTodosLosCandidatos();
 
-            String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            String timestamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
             String rutaProyecto = System.getProperty("user.dir");
             String rutaCompleta = rutaProyecto + File.separator + rutaBase + "_" + timestamp + ".xls";
 

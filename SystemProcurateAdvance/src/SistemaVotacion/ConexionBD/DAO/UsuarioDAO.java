@@ -203,7 +203,7 @@ public class UsuarioDAO {
 
      
      public boolean existeUsuario(String nombreUsuario) {
-        String sql = "call existeUsuario(?)";
+        String sql = "call existeUsuario(?,?)";
         try (Connection conn = conexion.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nombreUsuario);
             ResultSet rs = ps.executeQuery();

@@ -59,7 +59,7 @@ public class Votarr extends javax.swing.JFrame {
     private EleccionDAO elecciondao;
     private List<Estudiantes> listaEstudiantes;
     private List<Candidatos> listaCandidatos;
-     private FrmPrincipal formularioPrincipal;
+    private FrmPrincipal formularioPrincipal;
     
     private boolean votacionIniciada = false; 
     private final LocalDateTime fechaFinalizacion;
@@ -104,7 +104,7 @@ public class Votarr extends javax.swing.JFrame {
     public void stlyes() {
         lbreloj.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font: bold 48 $h1.font;"
-                + "foreground: #00FF00;"
+                + "foreground: #40e0d0;"
                 + "background: #1E1E1E;"
                 + "opaque: true");
     }
@@ -403,7 +403,8 @@ public class Votarr extends javax.swing.JFrame {
         Graphics2D g2d = bufferedImage.createGraphics();
         g2d.drawImage(img, 0, 0, null);
 
-        g2d.setColor(new Color(57, 255, 20, 150));
+        g2d.setColor(new Color(64, 224, 208, 150));
+
         g2d.setStroke(new BasicStroke(7));
         g2d.drawRect(0, 0, bufferedImage.getWidth() - 1, bufferedImage.getHeight() - 1);
 
@@ -511,8 +512,8 @@ public class Votarr extends javax.swing.JFrame {
                                     .addComponent(RbC3)
                                     .addComponent(RbC2)
                                     .addComponent(RbC1)
-                                    .addComponent(RbVotoenBlanco, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lbreloj, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(lbreloj, javax.swing.GroupLayout.PREFERRED_SIZE, 279, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RbVotoenBlanco, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(37, 37, 37))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)

@@ -16,6 +16,7 @@ public class Candidatos {
   private int idCandidato;
   private int votosObtenidos;
   private boolean activo;
+  private double porcentajeVotos; 
 
     public Candidatos(int idCandidato, Estudiantes estudiante, String propuesta) {
         this.idCandidato=idCandidato;
@@ -23,11 +24,13 @@ public class Candidatos {
         this.propuesta = propuesta;
         this.votosObtenidos = 0;
         this.activo=true;
+        this.porcentajeVotos = 0.0; 
     }
 
     public int getIdCandidato() {
         return idCandidato;
     }
+    
      public static final ArrayList<Candidatos> listaCandidatos = new ArrayList<>();
 
 
@@ -56,6 +59,14 @@ public class Candidatos {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public double getPorcentajeVotos() {
+        return porcentajeVotos;
+    }
+
+    public void setPorcentajeVotos(double porcentajeVotos) {
+        this.porcentajeVotos = porcentajeVotos;
     }
     
     

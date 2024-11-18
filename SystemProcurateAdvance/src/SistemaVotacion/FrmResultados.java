@@ -1,6 +1,4 @@
-
 package SistemaVotacion;
-
 
 import SistemaVotacion.ConexionBD.DAO.EleccionDAO;
 import SistemaVotacion.ConexionBD.DAO.GradosDAO;
@@ -39,29 +37,29 @@ import jxl.write.WriteException;
 import login.Sesion;
 import login.Usuario;
 
-
 public class FrmResultados extends javax.swing.JFrame {
-    
-  String [] encabezado = {"Nombre", "Apellido", "Votos Obtenidos"};  
-  String[] encabezado2 = {"NºEleccion", "Total_Votos", "Fecha_Conteo"};
+
+    String[] encabezado = {"Nombre", "Apellido", "Votos Obtenidos", "porcentaje"};
+    String[] encabezado2 = {"NºEleccion", "Total_Votos", "Fecha_Conteo"};
     private FrmPrincipal frmPrincipal;
-   GradosDAO gradosdao;
-   Eleccion eleccion;
+    GradosDAO gradosdao;
+    Eleccion eleccion;
+
     public FrmResultados(FrmPrincipal principal) {
         initComponents();
         this.frmPrincipal = principal;
         gradosdao = new GradosDAO();
-   
+
         cargarElecciones();
         llenarComboGrados();
         CbGrados.setVisible(false);
-    
-       actualizarEstadoBotonResultados(); 
-       configurarInterfazUsuario();
-       estilos();
-        
+
+        actualizarEstadoBotonResultados();
+        configurarInterfazUsuario();
+        estilos();
+
     }
-    
+
     private void configurarInterfazUsuario() {
         if (Sesion.haySesionActiva()) {
             verificarPrivilegios();
@@ -81,6 +79,7 @@ public class FrmResultados extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Error: Usuario no inicializado");
         }
     }
+
     private void llenarComboGrados() {
         CbGrados.removeAllItems();
         CbGrados.addItem("Selecciona");
@@ -92,8 +91,7 @@ public class FrmResultados extends javax.swing.JFrame {
             CbGrados.setSelectedIndex(1);
         }
     }
-    
-    
+
     private void actualizarEstadoBotonResultados() {
         try {
             EleccionDAO eleccionDAO = new EleccionDAO();
@@ -104,63 +102,101 @@ public class FrmResultados extends javax.swing.JFrame {
         }
     }
 
-    
-
     private void cargarElecciones() {
-    try {
-        EleccionDAO eleccionDAO = new EleccionDAO();
-        List<Eleccion> elecciones = eleccionDAO.obtenerElecciones();
-        CbElecciones.removeAllItems();
-        for (Eleccion eleccion : elecciones) {
-            CbElecciones.addItem("ID: " + eleccion.getIdeleccion() + " - Inicio: " + eleccion.getFechainicio().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        try {
+            EleccionDAO eleccionDAO = new EleccionDAO();
+            List<Eleccion> elecciones = eleccionDAO.obtenerElecciones();
+            CbElecciones.removeAllItems();
+            for (Eleccion eleccion : elecciones) {
+                CbElecciones.addItem("ID: " + eleccion.getIdeleccion() + " - Inicio: " + eleccion.getFechainicio().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            }
+            boolean hayElecciones = !elecciones.isEmpty();
+            BtTotal.setEnabled(hayElecciones);
+            BtPorGrado.setEnabled(hayElecciones);
+            BtExportar.setEnabled(hayElecciones);
+            if (!hayElecciones) {
+                System.out.println("No hay elecciones disponibles");
+            }
+            actualizarEstadoBotonResultados();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar las elecciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-        boolean hayElecciones = !elecciones.isEmpty();
-        BtTotal.setEnabled(hayElecciones);
-        BtPorGrado.setEnabled(hayElecciones);
-        BtExportar.setEnabled(hayElecciones);
-        if (!hayElecciones) {
-            System.out.println( "No hay elecciones disponibles");
-        }
-        actualizarEstadoBotonResultados();  
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error al cargar las elecciones: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
 
-
-    
     private void cargarResultadosPorCandidato(int eleccionId) {
         try {
             ResultadoDAO resultadosdao = new ResultadoDAO();
             List<Resultados> resultados = resultadosdao.obtenerResultadosPorCandidato(eleccionId);
-            DefaultTableModel model = new DefaultTableModel(encabezado, 0);
+
+            DefaultTableModel model = new DefaultTableModel(0, encabezado.length) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            model.setColumnIdentifiers(encabezado);
 
             if (resultados.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No hay resultados disponibles para esta elección", "Información", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "No hay resultados disponibles para esta elección",
+                        "Información", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
+            int totalVotos = resultados.stream()
+                    .flatMap(r -> r.getCandidatos().stream())
+                    .mapToInt(Candidatos::getVotosObtenidos)
+                    .sum();
+
+            resultados.sort((r1, r2) -> {
+                int votos1 = r1.getCandidatos().get(0).getVotosObtenidos();
+                int votos2 = r2.getCandidatos().get(0).getVotosObtenidos();
+                return Integer.compare(votos2, votos1);
+            });
+
             for (Resultados resultado : resultados) {
                 for (Candidatos candidato : resultado.getCandidatos()) {
-                    String nombre = "Voto en blanco".equals(candidato.getEstudiante().getNombre()) ? "Voto en Blanco" : candidato.getEstudiante().getNombre();
+                    String nombre = "Voto en blanco".equals(candidato.getEstudiante().getNombre())
+                            ? "Voto en Blanco"
+                            : candidato.getEstudiante().getNombre();
                     String apellido = candidato.getEstudiante().getApellido();
                     int votosObtenidos = candidato.getVotosObtenidos();
-                    model.addRow(new Object[]{nombre, apellido, votosObtenidos});
+
+                    double porcentaje = totalVotos > 0
+                            ? (votosObtenidos * 100.0) / totalVotos
+                            : 0.0;
+
+                    model.addRow(new Object[]{
+                        nombre,
+                        apellido,
+                        votosObtenidos,
+                        String.format("%.2f%%", porcentaje)
+                    });
                 }
             }
 
             TableResultados.setModel(model);
+
+            TableResultados.getColumnModel().getColumn(0).setCellRenderer(new Celdas());
+
+            TableResultados.getColumnModel().getColumn(0).setPreferredWidth(150);
+            TableResultados.getColumnModel().getColumn(1).setPreferredWidth(150);
+            TableResultados.getColumnModel().getColumn(2).setPreferredWidth(100);
+            TableResultados.getColumnModel().getColumn(3).setPreferredWidth(100);
+
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+            TableResultados.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+            TableResultados.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+
             TableResultados.setVisible(true);
             jScrollPane1.setVisible(true);
+
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar los resultados: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al cargar los resultados: " + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    
-    
-    
-    
     private void cargarResultadosPorGrado(int eleccionId, int gradoId) throws SQLException {
         ResultadoDAO resultadosdao = new ResultadoDAO();
         List<Resultados> resultados = resultadosdao.obtenerResultadosPorGrado(eleccionId, gradoId);
@@ -182,9 +218,6 @@ public class FrmResultados extends javax.swing.JFrame {
         TableResultados.setVisible(true);
     }
 
-
-
-
     private void cargarResultadosTotales(int eleccionId) {
         try {
             ResultadoDAO resultadosdao = new ResultadoDAO();
@@ -198,7 +231,6 @@ public class FrmResultados extends javax.swing.JFrame {
                 return;
             }
 
-           
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             for (Resultados resultado : resultados) {
@@ -217,8 +249,6 @@ public class FrmResultados extends javax.swing.JFrame {
         }
     }
 
-
-
     private int extraerIdEleccion(String eleccionSeleccionada) {
         String[] partes = eleccionSeleccionada.split(" - ");
         return Integer.parseInt(partes[0].replace("ID: ", ""));
@@ -232,35 +262,29 @@ public class FrmResultados extends javax.swing.JFrame {
     private void mostrarMensaje(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje, "Información", JOptionPane.INFORMATION_MESSAGE);
     }
-    
-
 
     public void exportarResultadosAExcel(int eleccionId, String rutaBase) {
         try {
             ResultadoDAO resultadosdao = new ResultadoDAO();
-          
+
             List<Resultados> resultadosPorCandidato = resultadosdao.obtenerResultadosPorCandidato(eleccionId);
             List<Resultados> resultadosTotales = resultadosdao.obtenerResultadosTotales(eleccionId);
 
-            
             String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             String rutaProyecto = System.getProperty("user.dir");
             String rutaCompleta = rutaProyecto + File.separator + rutaBase + "_" + timestamp + ".xls";
 
-            
             WritableWorkbook workbook = jxl.Workbook.createWorkbook(new File(rutaCompleta));
 
             // Primera hoja: Resultados por Candidato
             WritableSheet sheetCandidatos = workbook.createSheet("Resultados por Candidato", 0);
             String[] encabezadoCandidatos = {"Nombre", "Apellido", "Votos Obtenidos"};
 
-            
             for (int i = 0; i < encabezadoCandidatos.length; i++) {
                 Label label = new Label(i, 0, encabezadoCandidatos[i]);
                 sheetCandidatos.addCell(label);
             }
 
-          
             int rowCandidatos = 1;
             for (Resultados resultado : resultadosPorCandidato) {
                 for (Candidatos candidato : resultado.getCandidatos()) {
@@ -270,7 +294,7 @@ public class FrmResultados extends javax.swing.JFrame {
 
                     sheetCandidatos.addCell(new Label(0, rowCandidatos, nombre));
                     sheetCandidatos.addCell(new Label(1, rowCandidatos, candidato.getEstudiante().getApellido()));
-                    
+
                     jxl.write.Number numberCell = new jxl.write.Number(2, rowCandidatos, candidato.getVotosObtenidos());
                     sheetCandidatos.addCell(numberCell);
                     rowCandidatos++;
@@ -281,13 +305,11 @@ public class FrmResultados extends javax.swing.JFrame {
             WritableSheet sheetTotales = workbook.createSheet("Resultados Totales", 1);
             String[] encabezadoTotales = {"NºEleccion", "Total_Votos", "Fecha_Conteo"};
 
-          
             for (int i = 0; i < encabezadoTotales.length; i++) {
                 Label label = new Label(i, 0, encabezadoTotales[i]);
                 sheetTotales.addCell(label);
             }
 
-         
             int rowTotales = 1;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             for (Resultados resultado : resultadosTotales) {
@@ -301,7 +323,6 @@ public class FrmResultados extends javax.swing.JFrame {
                 rowTotales++;
             }
 
-           
             workbook.write();
             workbook.close();
 
@@ -357,26 +378,20 @@ public class FrmResultados extends javax.swing.JFrame {
         }
     }
 
-    
-    
-      public JPanel getPanel() {
+    public JPanel getPanel() {
         return PanelResult;
     }
-      
-      
+
     public void estilos() {
-   
+
         String comboBoxStyle = ""
                 + "background: #34495E;"
                 + "foreground: #FFFFFF;"
-                
-              
                 + "arc: 5";
 
         CbGrados.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
         CbElecciones.putClientProperty(FlatClientProperties.STYLE, comboBoxStyle);
 
-      
         String buttonStyle = ""
                 + "background: #2C3E50;"
                 + "foreground: #B0B0B0;"
@@ -384,7 +399,6 @@ public class FrmResultados extends javax.swing.JFrame {
                 + "hoverBackground: darken(#2C3E50,5%);"
                 + "pressedBackground: darken(#2C3E50,15%);"
                 + "font: bold 12 'Segoe UI';"
-            
                 + "arc: 8";
 
         BtCargar.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
@@ -392,7 +406,6 @@ public class FrmResultados extends javax.swing.JFrame {
         BtPorGrado.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
         BtGeneral.putClientProperty(FlatClientProperties.STYLE, buttonStyle);
 
-        
         BtExportar.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background: #3498DB;"
                 + "foreground: #FFFFFF;"
@@ -400,27 +413,22 @@ public class FrmResultados extends javax.swing.JFrame {
                 + "hoverBackground: darken(#3498DB,5%);"
                 + "pressedBackground: darken(#3498DB,15%);"
                 + "font: bold 12 'Segoe UI';"
-          
                 + "arc: 8");
 
-        
         PanelResult.putClientProperty(FlatClientProperties.STYLE, ""
                 + "background: #2C3E50;"
-             
                 + "arc: 5");
-     
+
         TableResultados.putClientProperty(FlatClientProperties.STYLE, ""
-                + "background: #1E2837;" 
+                + "background: #1E2837;"
                 + "foreground: #FFFFFF;");
 
-
         TableResultados.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
-                + "background: #2C3E50;" 
+                + "background: #2C3E50;"
                 + "foreground: #FFFFFF;"
                 + "font: bold 12 'Segoe UI';"
-                + "separatorColor: #34495E;" 
+                + "separatorColor: #34495E;"
                 + "hoverBackground: darken(#2C3E50, 5%)");
-
 
         TableResultados.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
@@ -430,35 +438,28 @@ public class FrmResultados extends javax.swing.JFrame {
                         isSelected, hasFocus, row, column);
 
                 if (isSelected) {
-                    c.setBackground(new Color(52, 152, 219)); 
+                    c.setBackground(new Color(52, 152, 219));
                     c.setForeground(Color.WHITE);
                 } else {
                     if (row % 2 == 0) {
-                        c.setBackground(new Color(30, 40, 55)); 
+                        c.setBackground(new Color(30, 40, 55));
                     } else {
-                        c.setBackground(new Color(35, 45, 60)); 
+                        c.setBackground(new Color(35, 45, 60));
                     }
                     c.setForeground(Color.WHITE);
                 }
 
-            
                 ((JLabel) c).setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
                 return c;
             }
         });
 
-
         TableResultados.setRowHeight(30);
-        TableResultados.setShowGrid(false); 
+        TableResultados.setShowGrid(false);
         TableResultados.setIntercellSpacing(new Dimension(0, 0));
     }
 
-
-
-
-
-    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -612,21 +613,21 @@ public class FrmResultados extends javax.swing.JFrame {
 
     private void BtTotalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtTotalActionPerformed
         // TODO add your handling code here:
-          String eleccionSeleccionada = (String) CbElecciones.getSelectedItem();
-    if (eleccionSeleccionada != null && !eleccionSeleccionada.equals("Selecciona")) {
-        try {
-            int eleccionId = extraerIdEleccion(eleccionSeleccionada);
-            cargarResultadosPorCandidato(eleccionId);
-            CbGrados.setVisible(false);
-            jScrollPane1.setVisible(true);
-        } catch (NumberFormatException ex) {
-            manejarError("Error al procesar el ID de la elección", ex);
+        String eleccionSeleccionada = (String) CbElecciones.getSelectedItem();
+        if (eleccionSeleccionada != null && !eleccionSeleccionada.equals("Selecciona")) {
+            try {
+                int eleccionId = extraerIdEleccion(eleccionSeleccionada);
+                cargarResultadosPorCandidato(eleccionId);
+                CbGrados.setVisible(false);
+                jScrollPane1.setVisible(true);
+            } catch (NumberFormatException ex) {
+                manejarError("Error al procesar el ID de la elección", ex);
+            }
+        } else {
+            mostrarMensaje("Por favor, seleccione una elección válida.");
         }
-    } else {
-        mostrarMensaje("Por favor, seleccione una elección válida.");
-    }
 
-       
+
     }//GEN-LAST:event_BtTotalActionPerformed
 
     private void BtPorGradoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtPorGradoActionPerformed
@@ -652,7 +653,7 @@ public class FrmResultados extends javax.swing.JFrame {
 
     private void BtGeneralActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtGeneralActionPerformed
         // TODO add your handling code here:
-      String eleccionSeleccionada = (String) CbElecciones.getSelectedItem();
+        String eleccionSeleccionada = (String) CbElecciones.getSelectedItem();
         if (eleccionSeleccionada != null && !eleccionSeleccionada.equals("Selecciona")) {
             try {
                 int eleccionId = extraerIdEleccion(eleccionSeleccionada);
@@ -674,7 +675,7 @@ public class FrmResultados extends javax.swing.JFrame {
 
     private void BtExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtExportarActionPerformed
         // TODO add your handling code here:
-       
+
         String eleccionSeleccionada = (String) CbElecciones.getSelectedItem();
 
         if (eleccionSeleccionada == null || eleccionSeleccionada.isEmpty()) {
@@ -694,7 +695,7 @@ public class FrmResultados extends javax.swing.JFrame {
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-        
+
     }//GEN-LAST:event_BtExportarActionPerformed
 
     private void BtCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtCargarActionPerformed

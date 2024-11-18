@@ -94,10 +94,8 @@ VALUES
 ('Gabriela', 'Mejia', '1234567896', 7),
 ('Hector', 'Castillo', '1234567897', 8),
 ('Camilo', 'Rodriguez', '1234567898', 9),
-('Cristina', 'Mancilla', '1234567899', 10),
-('Carlos', 'Pérez', '123456789', 11),
-    ('Ana', 'Gómez', '987654321', 11),
-    ('Luis', 'Martínez', '456789123', 11);
+('Cristina', 'Mancilla', '1234567899', 10);
+
 
 
 ALTER TABLE Candidato ADD COLUMN activo BOOLEAN DEFAULT TRUE;
@@ -230,10 +228,10 @@ BEGIN
     UPDATE Candidato SET activo = FALSE WHERE activo = TRUE;
 END//
 
-CREATE PROCEDURE guardarEleccion(IN fechaInicio TIMESTAMP, IN fechaFin TIMESTAMP)
+/*CREATE PROCEDURE guardarEleccion(IN fechaInicio TIMESTAMP, IN fechaFin TIMESTAMP)
 BEGIN
     INSERT INTO Eleccion (fecha_Inicio, fecha_Fin, Estado) VALUES (fechaInicio, fechaFin, 'Activa');
-END//
+END//*/
 
 
 CREATE PROCEDURE insertarEleccion(IN fechaInicio TIMESTAMP, IN fechaFin TIMESTAMP)
@@ -300,23 +298,24 @@ END //
 
 CREATE PROCEDURE ObtenerResultadosPorCandidato(IN eleccionId INT)
 BEGIN
-    DECLARE total_votos INT;
+   DECLARE total_votos DECIMAL(10,2);
     
-
-    SELECT COUNT(*) INTO total_votos 
+    
+    SELECT CAST(COUNT(*) AS DECIMAL(10,2)) INTO total_votos 
     FROM Voto 
     WHERE FkEleccion = eleccionId;
     
 
     SET total_votos = IF(total_votos = 0, 1, total_votos);
 
-   
+ 
     SELECT 
         c.Id_Candidato,
         e.Nombre,
         e.Apellido,
         COUNT(v.Id_Voto) AS Votos_Obtenidos,
-        ROUND((COUNT(v.Id_Voto) / total_votos * 100), 2) AS Porcentaje_Votos
+        CONCAT(FORMAT((COUNT(v.Id_Voto) / total_votos * 100), 1), '%') AS Porcentaje_Votos,
+        total_votos AS Total_Votos_Eleccion
     FROM 
         candidatoporeleccion ce
         JOIN Candidato c ON ce.idCandidato = c.Id_Candidato
@@ -338,7 +337,8 @@ BEGIN
         'Voto en Blanco' AS Nombre,
         '' AS Apellido,
         COUNT(v.Id_Voto) AS Votos_Obtenidos,
-        ROUND((COUNT(v.Id_Voto) / total_votos * 100), 2) AS Porcentaje_Votos
+        CONCAT(FORMAT((COUNT(v.Id_Voto) / total_votos * 100), 1), '%') AS Porcentaje_Votos,
+        total_votos AS Total_Votos_Eleccion
     FROM 
         Voto v
     WHERE 
@@ -348,6 +348,8 @@ BEGIN
     ORDER BY 
         Votos_Obtenidos DESC, Id_Candidato;
 END //
+
+
 
 CREATE PROCEDURE ObtenerResultadosPorGrado(IN eleccionId INT, IN gradoId INT)
 BEGIN
@@ -750,7 +752,4 @@ BEGIN
     INSERT INTO Usuario_backup (Id_Usuario, Nombre_Usuario, Contrasena, Id_Rol, Estado, Fecha_Creacion, Operacion, Usuario)
     VALUES (OLD.Id_Usuario, OLD.Nombre_Usuario, OLD.Contrasena, OLD.Id_Rol, OLD.Estado, OLD.Fecha_Creacion, 'DELETE', USER());
 END//
-
-
-
 

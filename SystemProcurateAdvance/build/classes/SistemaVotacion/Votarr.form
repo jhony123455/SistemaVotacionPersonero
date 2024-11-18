@@ -49,8 +49,8 @@
                                   <Component id="RbC3" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="RbC2" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="RbC1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="RbVotoenBlanco" alignment="0" min="-2" pref="115" max="-2" attributes="0"/>
                                   <Component id="lbreloj" min="-2" pref="279" max="-2" attributes="0"/>
+                                  <Component id="RbVotoenBlanco" alignment="0" min="-2" pref="174" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                           </Group>

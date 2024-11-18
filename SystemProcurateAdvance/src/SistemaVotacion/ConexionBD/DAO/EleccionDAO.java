@@ -32,7 +32,7 @@ public class EleccionDAO {
         this.conexion = new Conexion();
     }
  
-    public void guardarEleccion(Eleccion eleccion) throws SQLException {
+    /*public void guardarEleccion(Eleccion eleccion) throws SQLException {
         String sql = "{CALL guardarEleccion(?, ?)}";
 
         try (Connection con = conexion.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -40,7 +40,7 @@ public class EleccionDAO {
             stmt.setTimestamp(2, Timestamp.valueOf(eleccion.getFechafin()));
             stmt.executeUpdate();
         }
-    }
+    }*/
 
     public Eleccion obtenerEleccionActual() throws SQLException {
         String sql = "{CALL obtenerEleccionActual(?)}";
